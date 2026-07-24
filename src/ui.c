@@ -43,7 +43,7 @@ char* Procces_char(String_Builder sd)
         }
     }
     sb_append_null(&sb);
-    return strndup(sb.items, sb.count);
+    return sb.items;
 }
 
 void add_Animation(Rectangle bondry)
