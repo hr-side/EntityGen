@@ -1,0 +1,6 @@
+{
+    "texturePath": "res/Player.png",
+        "frames": [
+            {"x" : 52.00, "y" : 28.00,"width" : 36.00,"height" : 40.00}
+        ]
+}
