@@ -23,6 +23,7 @@ typedef struct {
     bool Select_Mode;
     const char *output_path;
     const char *texture_Path;
+    const char *import_Path;
 } Canvas;
 
 void Init_Canvas(Canvas *c);

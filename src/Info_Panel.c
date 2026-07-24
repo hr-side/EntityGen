@@ -1,12 +1,14 @@
+#include "raylib.h"
 #include <Info_Panel.h>
 #include <tinyfiledialogs.h>
 #include <data.h>
 #include <nob.h>
+#include <unistd.h>
 
 void ED_Dialog(Canvas *c)
 {
     char const * filter_params[] = { "*.json" };
-    c->output_path = tinyfd_saveFileDialog("Path to rendered video",
+    c->output_path = tinyfd_saveFileDialog("Path to Genrated JSON Data",
                                           "./", NOB_ARRAY_LEN(filter_params),
                                           filter_params, "JSON file");
     if (c->output_path == NULL) return;
@@ -15,23 +17,48 @@ void ED_Dialog(Canvas *c)
 
 void Export_Button(Canvas *c, Rectangle bondry, Ui_State ui)
 {
-    UNUSED(ui);
     Rectangle Box = {
         .x = bondry.width * (1 - 0.125f),
         .y = bondry.height * (1 - 0.45f),
         .width = 180,
         .height = 30
     };
+    float thick = 2.5f;
     Color color;
     Vector2 MousePos = GetMousePosition();
     if (CheckCollisionPointRec(MousePos, Box)) {
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) ED_Dialog(c);
-        color = ColorBrightness(BLUE, 0.2f);
+        color = ColorBrightness(GetColor(0x181818ff), 0.2f);
+        thick = 1.5f;
     }
     else {
-        color = BLUE;
+        color = GetColor(0x181818ff);
     }
+
+    const char *text = "Export";
+    const int font_size = 24;
     DrawRectangleRec(Box, color);
+    DrawRectangleLinesEx((Rectangle) {
+            .x = Box.x - thick,
+            .y = Box.y - thick,
+            .width = Box.width + 2*thick,
+            .height = Box.height + 2*thick
+        }, thick, WHITE);
+    DrawTextEx(ui.font, text, (Vector2) {
+                    .x = Box.x + Box.width/2 - MeasureTextEx(ui.font, text, font_size, 0).x/2,
+                    .y = Box.y + Box.height/2 - ((float)font_size/2)
+                }, font_size, 0, WHITE);
+
+}
+
+void ID_Dialog(Canvas *c)
+{
+    char const * filter_params[] = { "*.json" };
+    c->import_Path = tinyfd_openFileDialog("Import JSON Data File", "./",
+                                           ARRAY_LEN(filter_params), filter_params,
+                                           "JSON File", 0);
+    if (c->output_path == NULL) return;
+    Import_Data(c);
 }
 
 void Import_Button(Canvas *c, Rectangle bondry, Ui_State ui)
@@ -43,17 +70,31 @@ void Import_Button(Canvas *c, Rectangle bondry, Ui_State ui)
         .width = 180,
         .height = 30
     };
+    float thick = 2.5f;
     Color color;
     Vector2 MousePos = GetMousePosition();
     if (CheckCollisionPointRec(MousePos, Box)) {
-        // if(IsMouseButtonPressed(Right)) Import_Data(&State);
-        UNUSED(c);
-        color = ColorBrightness(GREEN, 0.2f);
+        if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) ID_Dialog(c);
+        color = ColorBrightness(GetColor(0x181818ff), 0.2f);
+        thick = 1.5f;
     }
     else {
-        color = GREEN;
+        color = GetColor(0x181818ff);
     }
+
+    const char *text = "Import";
+    const int font_size = 24;
     DrawRectangleRec(Box, color);
+    DrawRectangleLinesEx((Rectangle) {
+            .x = Box.x - thick,
+            .y = Box.y - thick,
+            .width = Box.width + 2*thick,
+            .height = Box.height + 2*thick
+        }, thick, WHITE);
+    DrawTextEx(ui.font, text, (Vector2) {
+                    .x = Box.x + Box.width/2 - MeasureTextEx(ui.font, text, font_size, 0).x/2,
+                    .y = Box.y + Box.height/2 - ((float)font_size/2)
+                }, font_size, 0, WHITE);
 }
 
 void Info_Section(Canvas *c, Rectangle bondry, Ui_State ui)       // Print the Selction Box Info

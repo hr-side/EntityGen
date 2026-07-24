@@ -38,7 +38,7 @@ char* Procces_char(String_Builder sd)
         if (!(sd.items[i] == delma)) {
             sb_append(&sb, sd.items[i]);
         }
-        else if (sb.count > 0) {
+        else if (sb.count > 0 && sb.items[i-1] != ' ') {
             sb_append(&sb, ' ');
         }
     }

@@ -19,3 +19,8 @@ void Export_Data(Canvas *c)
     sb_appendf(&File_Data, "}\n");
     write_entire_file(c->output_path, File_Data.items, File_Data.count);
 }
+
+void Import_Data(Canvas *c)
+{
+    UNUSED(c);
+}
