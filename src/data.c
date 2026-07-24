@@ -22,5 +22,6 @@ void Export_Data(Canvas *c)
 
 void Import_Data(Canvas *c)
 {
-    UNUSED(c);
+    UNUSED(c);  // Import and parse the files,
+                // Not yet tho until we can save a file then we try parsing it
 }

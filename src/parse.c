@@ -1,4 +1,3 @@
-#include <corecrt_search.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <cJSON.h>

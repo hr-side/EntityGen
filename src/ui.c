@@ -17,6 +17,7 @@ Animations animations;
 String_Builder animation_name_field = {0};
 bool Case_Mode = false;
 bool add       = false;
+bool Ctrl      = false;
 
 static float Padding = 20.0f;
 static float field_height = 50.0f;
@@ -82,7 +83,7 @@ void add_Animation(Rectangle bondry)
 
     Vector2 MousePos = GetMousePosition();
     if (CheckCollisionPointRec(MousePos, bondry)) {
-        int key = GetKeyPressed();
+        int key = GetCharPressed();
 
         if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
             Case_Mode = true;
@@ -90,7 +91,11 @@ void add_Animation(Rectangle bondry)
             Case_Mode = false;
         }
 
-        if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) && IsKeyPressed(KEY_V)) {
+        if (IsKeyPressed(KEY_ENTER)) add = true;
+
+        if (IsKeyPressed(KEY_LEFT_CONTROL) || IsKeyPressed(KEY_RIGHT_CONTROL)) Ctrl = true;
+        if (Ctrl && IsKeyPressed(KEY_V)) {
+            Ctrl = !Ctrl;
             const char* cliptext = GetClipboardText();
             if (!(cliptext == NULL)) {
                 if ((animation_name_field.count + strlen(cliptext)) > 15) {
@@ -100,20 +105,16 @@ void add_Animation(Rectangle bondry)
                 goto save;
             }
         }
+        if (IsKeyPressed(KEY_BACKSPACE)) if (!(animation_name_field.count == 0)) animation_name_field.count--;
+
         switch (key) {
-            case KEY_BACKSPACE: if (!(animation_name_field.count == 0)) animation_name_field.count--;break;
             case 0: break;
-            case KEY_ENTER: add = true; break;
-            case KEY_LEFT_SHIFT: break;
-            case KEY_RIGHT_SHIFT: break;
-            case KEY_LEFT_CONTROL: break;
-            case KEY_RIGHT_CONTROL: break;
             default: {
                 if (animation_name_field.count >= 15) goto save;
                 if(Case_Mode) {
-                    sb_append(&animation_name_field, toupper(GetKeyName(key)[0]));
+                    sb_append(&animation_name_field, toupper((char) (key)));
                 } else {
-                    sb_append(&animation_name_field, GetKeyName(key)[0]);
+                    sb_append(&animation_name_field, (char) (key));
                 }
             }
             break;
