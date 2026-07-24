@@ -74,9 +74,10 @@ void add_Animation(Rectangle bondry)
 
         if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) && IsKeyPressed(KEY_V)) {
             const char* cliptext = GetClipboardText();
-            if (!(strcmp(cliptext, "") && strcmp(cliptext, "\n") && cliptext == NULL)) {
+            if (!(strcmp(cliptext, "") && strcmp(cliptext, "\n") && cliptext == NULL &&
+                strlen(cliptext) + animation_name_field.count > 15)) {
                 sb_append_cstr(&animation_name_field, cliptext);
-                // TODO: It's still buggie nedds some work
+                goto save;
             }
         }
         switch (key) {
@@ -97,6 +98,7 @@ void add_Animation(Rectangle bondry)
             break;
         }
     }
+save:
     if (CheckCollisionPointRec(MousePos, add_button_box) || add) {
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || add) {
             if (animation_name_field.count == 0) return;
