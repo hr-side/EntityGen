@@ -19,7 +19,7 @@ bool Case_Mode = false;
 bool add       = false;
 
 static float Padding = 20.0f;
-static float field_height = 70.0f;
+static float field_height = 50.0f;
 static int font_size = 24;
 
 
@@ -28,6 +28,22 @@ void ui_init()
     UI.font = LoadFont("res/Fonts/0xProtoNerdFont-Regular.ttf");
     
     Init_Canvas(&c);
+}
+
+char* Procces_char(String_Builder sd)
+{
+    String_Builder sb = {0};
+    char delma = '\n';
+    for (size_t i = 0; i < sd.count; ++i) {
+        if (!(sd.items[i] == delma)) {
+            sb_append(&sb, sd.items[i]);
+        }
+        else if (sb.count > 0) {
+            sb_append(&sb, ' ');
+        }
+    }
+    sb_append_null(&sb);
+    return strndup(sb.items, sb.count);
 }
 
 void add_Animation(Rectangle bondry)
@@ -39,6 +55,7 @@ void add_Animation(Rectangle bondry)
         .width = bondry.width - (2 * Padding),
         .height = field_height
     };
+
     Rectangle add_button_box = {
         .x = name_field_box.x + Padding,
         .y = name_field_box.y + name_field_box.height + Padding,
@@ -47,12 +64,14 @@ void add_Animation(Rectangle bondry)
     };
 
     DrawRectangleRec(name_field_box, GetColor(0x181818ff));
-    const char* text = nob_temp_sv_to_cstr(sb_to_sv(animation_name_field));
+    BeginScissorMode(name_field_box.x, name_field_box.y, name_field_box.width, name_field_box.height);
+    const char* text = Procces_char(animation_name_field);
     DrawTextEx(UI.font, text, (Vector2) {
              (name_field_box.x + name_field_box.width*0.1f),
              (name_field_box.y + (name_field_box.height*0.5f - font_size*0.5))
                 },
              font_size, 0, WHITE);
+    EndScissorMode();
 
     DrawRectangleRec(add_button_box, GetColor(0x181818ff));
     DrawTextEx(UI.font ,"Add Animation", (Vector2) {
@@ -64,7 +83,6 @@ void add_Animation(Rectangle bondry)
     Vector2 MousePos = GetMousePosition();
     if (CheckCollisionPointRec(MousePos, bondry)) {
         int key = GetKeyPressed();
-        if (animation_name_field.count == 15) return;
 
         if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
             Case_Mode = true;
@@ -74,8 +92,10 @@ void add_Animation(Rectangle bondry)
 
         if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) && IsKeyPressed(KEY_V)) {
             const char* cliptext = GetClipboardText();
-            if (!(strcmp(cliptext, "") && strcmp(cliptext, "\n") && cliptext == NULL &&
-                strlen(cliptext) + animation_name_field.count > 15)) {
+            if (!(cliptext == NULL)) {
+                if ((animation_name_field.count + strlen(cliptext)) > 15) {
+                    goto save;
+                }
                 sb_append_cstr(&animation_name_field, cliptext);
                 goto save;
             }
@@ -89,6 +109,7 @@ void add_Animation(Rectangle bondry)
             case KEY_LEFT_CONTROL: break;
             case KEY_RIGHT_CONTROL: break;
             default: {
+                if (animation_name_field.count >= 15) goto save;
                 if(Case_Mode) {
                     sb_append(&animation_name_field, toupper(GetKeyName(key)[0]));
                 } else {
@@ -101,21 +122,25 @@ void add_Animation(Rectangle bondry)
 save:
     if (CheckCollisionPointRec(MousePos, add_button_box) || add) {
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || add) {
-            if (animation_name_field.count == 0) return;
-            sb_append_null(&animation_name_field);
+            if (animation_name_field.count == 0) goto clean;
 
+            char* text = Procces_char(animation_name_field);
+            if (strlen(text) == 0) goto clean;
             Animation animation = {
-                .name = strdup(animation_name_field.items),
+                .name = text,
                 .duration = 0,
                 .loops = false,
                 .frames = {.Frame = NULL, .count = 0}
             };
             
             da_append(&animations, animation);
-            animation_name_field.count = 0;
-            add = false;
+            goto clean;
         }
     }
+        return;
+clean:
+    animation_name_field.count = 0;
+    add = false;
 }
 
 void Show_Animations(Rectangle bondry)
@@ -200,4 +225,5 @@ void ui_unload()
 {
     UnloadTexture(c.texture);
     UnloadShader(c.backgroundShader);
+    UnloadFont(UI.font);
 }
