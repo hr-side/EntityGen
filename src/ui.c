@@ -25,7 +25,7 @@ static int font_size = 24;
 
 void ui_init()
 {
-    UI.font = LoadFont("res/font.ttf");
+    UI.font = LoadFont("res/Fonts/0xProtoNerdFont-Regular.ttf");
     
     Init_Canvas(&c);
 }
@@ -48,10 +48,11 @@ void add_Animation(Rectangle bondry)
 
     DrawRectangleRec(name_field_box, GetColor(0x181818ff));
     const char* text = nob_temp_sv_to_cstr(sb_to_sv(animation_name_field));
-    DrawText(text,
-             (int) (name_field_box.x + name_field_box.width*0.1f),
-             (int) (name_field_box.y + (name_field_box.height*0.5f - font_size*0.5)),
-             font_size, WHITE);
+    DrawTextEx(UI.font, text, (Vector2) {
+             (name_field_box.x + name_field_box.width*0.1f),
+             (name_field_box.y + (name_field_box.height*0.5f - font_size*0.5))
+                },
+             font_size, 0, WHITE);
 
     DrawRectangleRec(add_button_box, GetColor(0x181818ff));
     DrawTextEx(UI.font ,"Add Animation", (Vector2) {
