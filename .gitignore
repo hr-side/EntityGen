@@ -2,7 +2,7 @@
 /src_build/*
 /libs/*
 
-nob!.c
+nob
 
 *.old
 *.exe
