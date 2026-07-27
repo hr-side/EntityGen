@@ -4,8 +4,15 @@
 #include <stddef.h>
 
 typedef struct {
-    Rectangle *Frame;
+    Rectangle cords;
+    size_t Texture_index;
+    size_t Hitbox_index;
+} Frame;
+
+typedef struct {
+    Frame *items;
     size_t count;
+    size_t capacity;
 } Frames;
 
 typedef struct {

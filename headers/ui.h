@@ -3,6 +3,7 @@
 
 #include <raylib.h>
 #include <stddef.h>
+#include <animation.h>
 
 typedef struct {
     const char **items;
@@ -16,6 +17,9 @@ typedef struct {
     const char *output_path;
     Texture_Paths texture_paths;
     const char *import_Path;
+
+
+    Animations animations;
 } Ui_State;
 
 
