@@ -8,10 +8,10 @@
 #define COURSURE_BOX_SIZE   4
 #define PREVIEW_FRAME_SIZE 32 // px
 
-void Init_Canvas(Canvas *c)
+void Init_Canvas(Canvas *c, Ui_State *ui)
 {
     memset(c, 0, sizeof(Canvas));
-    Image image = LoadImage("res/Player.png");
+    Image image = LoadImage(ui->texture_paths.items[0]);
     c->texture = LoadTextureFromImage(image);
     UnloadImage(image);
     c->state = EDIT_FRAMES;

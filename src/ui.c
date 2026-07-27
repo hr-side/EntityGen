@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 #define  NOB_IMPLEMENTATION
 #include <nob.h>
@@ -9,6 +10,8 @@
 #include <stddef.h>
 #include <Info_Panel.h>
 #include <animation.h>
+
+#define TEXTURE_PATH_CAPACITY
 
 Ui_State UI;
 Canvas c;
@@ -27,8 +30,8 @@ static int font_size = 24;
 void ui_init()
 {
     UI.font = LoadFont("res/Fonts/0xProtoNerdFont-Regular.ttf");
-    
-    Init_Canvas(&c);
+    da_append(&UI.texture_paths, "res/Player.png");
+    Init_Canvas(&c, &UI);
 }
 
 char* Procces_char(String_Builder sd)
@@ -216,7 +219,7 @@ void ui_update()
         .width = w - (2 * (sidePanelWidth + padding)),
         .height = h - (InfoPanelHeight + 2 * padding)
     };
-    Info_Panel(&c, InfoPanelBondry, UI);
+    Info_Panel(&c, InfoPanelBondry, &UI);
     right_panel(rightPanelBondry);
     Animation_Panel(leftPanelBondry);
     Draw_Canvas(canvasBondry, &c);

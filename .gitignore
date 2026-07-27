@@ -1,5 +1,7 @@
-./build/*
-./nob
-./nob.old
-./nob.exe
-./nob.exe.old
+/build/*
+
+nob!.c
+
+*.old
+*.exe
+*.exe.old
