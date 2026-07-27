@@ -35,7 +35,8 @@ const char* src_files[] = {
     "ui.c",
     "canvas.c", 
     "data.c",
-    "Info_Panel.c"
+    "Info_Panel.c",
+    "Animations_Panel.c"
 };
 
 void build_thirdparty(Cmd *cmd)

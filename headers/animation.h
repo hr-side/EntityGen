@@ -28,4 +28,5 @@ typedef struct {
     size_t capacity;
 } Animations;
 
+
 #endif//__ANIMATION_H_
