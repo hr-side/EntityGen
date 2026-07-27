@@ -4,16 +4,24 @@
 #define NOB_IMPLEMENTATION
 #include "nob.h"
 
-#define THIRDPARTY_DIR  "./thirdparty/"
-#define BUILD_DIR       "./build/"
-#define SRC_BUILD_DIR   "./src_build/"
-#define SRC_DIR         "./src/"
+// TODO: We should build raylib our self to make sure we have it
+// see tsoding/musilizer.
 
 #ifdef _WIN32
 #   define COMPILER "gcc.exe"
+#   define HEADERS_DIR ".\\headers"
+#   define SRC_BUILD_DIR   ".\\src_build\\"
+#   define BUILD_DIR       ".\\build\\"
+#   define THIRDPARTY_DIR  ".\\thirdparty\\"
 #   define build(cmd) build_win(cmd)
+#   define SRC_DIR         ".\\src\\"
 #else
+#   define BUILD_DIR       "./build/"
+#   define SRC_BUILD_DIR   "./src_build/"
+#   define THIRDPARTY_DIR  "./thirdparty/"
+#   define SRC_DIR         "./src/"
 #   define COMPILER "cc"
+#   define HEADERS_DIR "./headers"
 #   define build(cmd) build_linux(cmd)
 #endif
 
@@ -47,7 +55,7 @@ void build_thirdparty(Cmd *cmd)
     char obj_path[512]; 
     snprintf(obj_path, sizeof(obj_path), SRC_BUILD_DIR"%s.o", thirdparty[0]);
     cmd_append(cmd, strdup(obj_path));
-    cmd_append(cmd, "-I", "./headers");
+    cmd_append(cmd, "-I", HEADERS_DIR);
 }
 
 void build_linux(Cmd *cmd)
@@ -72,16 +80,21 @@ void build_linux(Cmd *cmd)
 void build_win(Cmd *cmd)
 {
     nob_log(NOB_INFO, "Build Target is : win32");
-    cmd_append(cmd, 
-               COMPILER, 
-               "./src/main.c",
-               "./src/ui.c",
-               "-o",
-               "./build/main.exe",
-               "-I","C:\\Program Files (x86)\\raylib\\include",
-               "-I",".\\headers",
-               "-L","C:\\Program Files (x86)\\raylib\\lib",
-               "-lraylib", "-lopengl32", "-lgdi32", "-lwinmm");
+    cmd_append(cmd, COMPILER);
+    cmd_append(cmd, "-Wall", "-Wextra", "-ggdb");
+    cmd_append(cmd, "-o", "./build/EntityGen.exe");
+    char srcs[512];
+    for (size_t i = 0; i < ARRAY_LEN(src_files); ++i) {
+        snprintf(srcs, sizeof(srcs), SRC_DIR"%s", src_files[i]);
+        cmd_append(cmd, strdup(srcs));
+    }
+    cmd_append(cmd, SRC_BUILD_DIR"tinyfiledialogs.o");
+    cmd_append(cmd, "-I","C:\\Program Files (x86)\\raylib\\include");
+    cmd_append(cmd, "-I",".\\headers");
+    cmd_append(cmd, "-I",".");
+    cmd_append(cmd, "-L",".\\libs");
+    cmd_append(cmd, "-lraylib", "-lopengl32", "-lgdi32", "-lwinmm");
+    cmd_append(cmd, "-lcomdlg32", "-lole32", "-luuid", "-lshlwapi");
 }
 
 int main(int argc, char **argv) {
