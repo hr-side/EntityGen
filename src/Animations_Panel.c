@@ -1,3 +1,4 @@
+#include "raylib.h"
 #include <nob.h>
 #include <ui.h>
 #include <Animations.h>
@@ -182,18 +183,32 @@ void Show_Animations(Ui_State *ui, Rectangle bondry)
     };
 
     DrawRectangleLinesEx(box_outline, thick, WHITE);
-    BeginScissorMode(box.x, box.y, box.width, box.height);
     DrawRectangleRec(box, GetColor(0x181818ff));
 
     if (ui->animations.items == NULL) return;
     for (size_t i = 0; i < ui->animations.count; ++i) {
+        Rectangle tiny_box = {
+            .x = box.x + Padding,
+            .y = box.y + font_size + (Padding * (i) * 2) + (i*Padding),
+            .width = box.width - (2 * Padding),
+            .height = font_size + Padding
+        };
+        Rectangle Delete_box = {
+            .x = tiny_box.x + tiny_box.width - tiny_box.width*0.2f,
+            .y = tiny_box.y + tiny_box.height/2 -  (float)font_size/2,
+            .width = font_size,
+            .height = font_size
+        };
+        DrawRectangleLinesEx(tiny_box, thick, WHITE);
+        BeginScissorMode(tiny_box.x, tiny_box.y, (Delete_box.x - font_size) - tiny_box.x, tiny_box.height);
         DrawTextEx(ui->font, ui->animations.items[i].name, (Vector2) {
-                (box.x + box.width*0.1f),
-                (box.y + font_size*i + 1 + Padding)
-                    },
-                 font_size, 0,WHITE);
+                tiny_box.x + tiny_box.width*0.1f,
+                tiny_box.y + tiny_box.height/2 - (float)font_size/2
+        },
+        font_size, 0,WHITE);
+        EndScissorMode();
+        DrawRectangleRec(Delete_box, RED);
     }
-    EndScissorMode();
 }
 
 void Animation_Panel(Ui_State *ui, Rectangle bondry) {
