@@ -16,7 +16,7 @@ Canvas c;
 
 static String_Builder duration_sb = {0};
 static bool select_duration_field = false;
-float duration;
+static int duration_sb_anim_index = -1;
 bool loops;
 bool update_duration = false;
 
@@ -34,9 +34,9 @@ void ui_init()
     Init_Canvas(&c, &UI);
 }
 
-void parse_float_from_sb(String_Builder *sb)
+float parse_float_from_sb(String_Builder *sb)
 {
-    UI.animations.items[UI.currentAnimationIndex].duration = 0;
+    float duration = 0;
     bool after_dot = false;
     float frac = 0.1f;
 
@@ -47,9 +47,9 @@ void parse_float_from_sb(String_Builder *sb)
         }
         int digit = sb->items[i] - '0';
         if (!after_dot) {
-            UI.animations.items[UI.currentAnimationIndex].duration = UI.animations.items[UI.currentAnimationIndex].duration * 10.0f + digit;
+            duration = duration * 10.0f + digit;
         } else {
-            UI.animations.items[UI.currentAnimationIndex].duration += digit * frac;
+            duration += digit * frac;
             frac *= 0.1f;
         }
     }
@@ -58,6 +58,7 @@ void parse_float_from_sb(String_Builder *sb)
     sb->items = NULL;
     sb->count = 0;
     sb->capacity = 0;
+    return duration;
 }
 
 void Animation_Panel_Show(Rectangle bondry)
@@ -75,7 +76,6 @@ void Animation_Panel_Show(Rectangle bondry)
         .width = bondry.width - (2 * Padding) + (2 * thick),
         .height = field_height + (2 * thick)
     };
-
 
     Rectangle duration_field_box = {
         .x = bondry.x + Padding,
@@ -130,13 +130,19 @@ void Animation_Panel_Show(Rectangle bondry)
         DrawBox = true;
         loops = UI.animations.items[UI.currentAnimationIndex].loops;
 
-        duration = UI.animations.items[UI.currentAnimationIndex].duration;
-        if (duration_sb.items == NULL) {
-            if (duration == 0) {
-                sb_appendf(&duration_sb, "%.2f", duration);
-            } else {
-                sb_appendf(&duration_sb, "%.2f", duration);
+        if (duration_sb_anim_index == -1) {
+            duration_sb_anim_index = UI.currentAnimationIndex;
+        }
+        if (duration_sb.items == NULL || (size_t) duration_sb_anim_index != UI.currentAnimationIndex) {
+            if (duration_sb.items != NULL) {
+                free(duration_sb.items);
+                duration_sb.items = NULL;
+                duration_sb.count = 0;
+                duration_sb.capacity = 0;
             }
+            select_duration_field = false;
+            sb_appendf(&duration_sb, "%.2f", UI.animations.items[UI.currentAnimationIndex].duration);
+            duration_sb_anim_index = UI.currentAnimationIndex;
         }
     }
 
@@ -168,7 +174,7 @@ void Animation_Panel_Show(Rectangle bondry)
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {select_duration_field = false; update_duration = true;}
         }
         if (CheckCollisionPointRec(MousePos, duration_field_box)) {
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) select_duration_field = true; 
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {select_duration_field = true; update_duration = false;}
         }
         
         if (select_duration_field) {
@@ -203,6 +209,7 @@ void Animation_Panel_Show(Rectangle bondry)
             .y = duration_field_box.y + duration_field_box.height*0.5f - font_size*0.5f
         }
         , font_size, 0, WHITE);
+        free((void *)rendertext);
 
         DrawTextEx(UI.font, " Loops: ", (Vector2) {
             .x = bondry.x + Padding,
@@ -210,7 +217,7 @@ void Animation_Panel_Show(Rectangle bondry)
         }, font_size, 0, WHITE);
 
         if (update_duration) {
-            parse_float_from_sb(&duration_sb);
+            UI.animations.items[UI.currentAnimationIndex].duration = parse_float_from_sb(&duration_sb);
             update_duration = false;
         }
 
@@ -287,7 +294,6 @@ void Animation_Panel_Show(Rectangle bondry)
         (name_field_box.y + (name_field_box.height*0.5f - font_size*0.5))
     },
     font_size, 0, text_color);
-    free((void *)rendertext);
 }
 
 void Animation_Panel(Rectangle bondry) {
