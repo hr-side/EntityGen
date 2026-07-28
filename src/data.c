@@ -6,6 +6,7 @@
 
 void Export_Data(Canvas *c, Ui_State *ui)
 {
+    UNUSED(c);
     Nob_String_Builder File_Data = {0};
     File_Data.count = 0;
     sb_appendf(&File_Data, "{\n");
@@ -27,11 +28,22 @@ void Export_Data(Canvas *c, Ui_State *ui)
         sb_appendf(&File_Data, "            \"frameDuration\" : %.2f,\n", ui->animations.items[i].duration);
         sb_appendf(&File_Data, "            \"loops\" : %s,\n", ui->animations.items[i].loops ? "true" : "false");
         sb_appendf(&File_Data, "            \"frames\": [\n"); 
-        sb_appendf(&File_Data, "                {\"x\" : %.2f, \"y\" : %.2f,\"width\" : %.2f,\"height\" : %.2f}\n",
-                   c->edited_frame.x,
-                   c->edited_frame.y,
-                   c->edited_frame.width,
-                   c->edited_frame.height); 
+        for (size_t j = 0; j < ui->animations.items[i].frames.count - 1; ++j) {
+            sb_appendf(&File_Data, "                {\"x\" : %.2f, \"y\" : %.2f,\"width\" : %.2f,\"height\" : %.2f, \"texture_index\" : %zu, \"hitbox_index\" : %zu},\n",
+                       ui->animations.items[i].frames.items[j].cords.x,
+                       ui->animations.items[i].frames.items[j].cords.y,
+                       ui->animations.items[i].frames.items[j].cords.width,
+                       ui->animations.items[i].frames.items[j].cords.height,
+                       ui->animations.items[i].frames.items[j].texture_index,
+                       ui->animations.items[i].frames.items[j].hitbox_index); 
+        }
+        sb_appendf(&File_Data, "                {\"x\" : %.2f, \"y\" : %.2f,\"width\" : %.2f,\"height\" : %.2f, \"texture_index\" : %zu, \"hitbox_index\" : %zu}\n",
+                   ui->animations.items[i].frames.items[ui->animations.items[i].frames.count - 1].cords.y,
+                   ui->animations.items[i].frames.items[ui->animations.items[i].frames.count - 1].cords.x,
+                   ui->animations.items[i].frames.items[ui->animations.items[i].frames.count - 1].cords.width,
+                   ui->animations.items[i].frames.items[ui->animations.items[i].frames.count - 1].cords.height,
+                   ui->animations.items[i].frames.items[ui->animations.items[i].frames.count - 1].texture_index,
+                   ui->animations.items[i].frames.items[ui->animations.items[i].frames.count - 1].hitbox_index); 
         sb_appendf(&File_Data, "            ]\n"); 
         sb_appendf(&File_Data, "        },\n");
     }
@@ -39,11 +51,22 @@ void Export_Data(Canvas *c, Ui_State *ui)
     sb_appendf(&File_Data, "            \"frameDuration\" : %.2f,\n", ui->animations.items[ui->animations.count - 1].duration);
     sb_appendf(&File_Data, "            \"loops\" : %s,\n", ui->animations.items[ui->animations.count - 1].loops ? "true" : "false");
     sb_appendf(&File_Data, "            \"frames\": [\n"); 
-    sb_appendf(&File_Data, "                {\"x\" : %.2f, \"y\" : %.2f,\"width\" : %.2f,\"height\" : %.2f}\n",
-               c->edited_frame.x,
-               c->edited_frame.y,
-               c->edited_frame.width,
-               c->edited_frame.height); 
+    for (size_t j = 0; j < ui->animations.items[ui->animations.count - 1].frames.count - 1; ++j) {
+        sb_appendf(&File_Data, "                {\"x\" : %.2f, \"y\" : %.2f,\"width\" : %.2f,\"height\" : %.2f, \"texture_index\" : %zu, \"hitbox_index\" : %zu},\n",
+                   ui->animations.items[ui->animations.count - 1].frames.items[j].cords.x,
+                   ui->animations.items[ui->animations.count - 1].frames.items[j].cords.y,
+                   ui->animations.items[ui->animations.count - 1].frames.items[j].cords.width,
+                   ui->animations.items[ui->animations.count - 1].frames.items[j].cords.height,
+                   ui->animations.items[ui->animations.count - 1].frames.items[j].texture_index,
+                   ui->animations.items[ui->animations.count - 1].frames.items[j].hitbox_index); 
+    }
+    sb_appendf(&File_Data, "                {\"x\" : %.2f, \"y\" : %.2f,\"width\" : %.2f,\"height\" : %.2f, \"texture_index\" : %zu, \"hitbox_index\" : %zu}\n",
+               ui->animations.items[ui->animations.count - 1].frames.items[ui->animations.items[ui->animations.count - 1].frames.count - 1].cords.y,
+               ui->animations.items[ui->animations.count - 1].frames.items[ui->animations.items[ui->animations.count - 1].frames.count - 1].cords.x,
+               ui->animations.items[ui->animations.count - 1].frames.items[ui->animations.items[ui->animations.count - 1].frames.count - 1].cords.width,
+               ui->animations.items[ui->animations.count - 1].frames.items[ui->animations.items[ui->animations.count - 1].frames.count - 1].cords.height,
+               ui->animations.items[ui->animations.count - 1].frames.items[ui->animations.items[ui->animations.count - 1].frames.count - 1].texture_index,
+               ui->animations.items[ui->animations.count - 1].frames.items[ui->animations.items[ui->animations.count - 1].frames.count - 1].hitbox_index); 
     sb_appendf(&File_Data, "            ]\n"); 
     sb_appendf(&File_Data, "        }\n");
     sb_appendf(&File_Data, "    }\n");
