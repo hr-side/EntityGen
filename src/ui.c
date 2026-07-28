@@ -11,6 +11,19 @@
 #include <Info_Panel.h>
 #include <Animations.h>
 
+
+#ifdef _WIN32 // Windows shit
+#include <string.h>
+char *strndup(const char *s, size_t n) {
+    char *new_str = malloc(n + 1);
+    if (new_str) {
+        strncpy(new_str, s, n);
+        new_str[n] = '\0';
+    }
+    return new_str;
+}
+#endif
+
 Ui_State UI;
 Canvas c;
 

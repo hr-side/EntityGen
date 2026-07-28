@@ -1,7 +1,9 @@
 CompileFlags:
   Add: [ 
     -I/home/hako/Projects/EntityDataGen/headers,
+    -ID:\\Projects\\EntityDataGen\\headers,
     -I/home/hako/Projects/EntityDataGen/,
+    -ID:\\Projects\\EntityDataGen\\,
     -Wall,
     -Wextra
   ]
