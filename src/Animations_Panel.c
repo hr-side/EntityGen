@@ -1,3 +1,4 @@
+#include "raylib.h"
 #include <nob.h>
 #include <stdlib.h>
 #include <ui.h>
@@ -96,7 +97,12 @@ void add_Animation(Ui_State *ui, Rectangle bondry)
     }
     EndScissorMode();
 
-    DrawRectangleRec(add_button_box, GetColor(0x181818ff));
+    Color Add_box_color = GetColor(0x181818ff);
+    if (CheckCollisionPointRec(MousePos, add_button_box)) {
+        Add_box_color = ColorBrightness(Add_box_color, 0.5f);
+    }
+
+    DrawRectangleRec(add_button_box, Add_box_color);
     DrawRectangleLinesEx(add_button_box_outline, thick, WHITE);
     DrawTextEx(ui->font ,"Add Animation", (Vector2) {
              (add_button_box.x + add_button_box.width*0.1f),
