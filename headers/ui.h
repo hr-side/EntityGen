@@ -18,7 +18,8 @@ typedef struct {
     Texture_Paths texture_paths;
     const char *import_Path;
 
-
+    size_t currentAnimationIndex;
+    bool IsAnimationSelected;
     Animations animations;
 } Ui_State;
 

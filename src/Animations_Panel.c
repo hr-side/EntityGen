@@ -169,6 +169,7 @@ clean:
 
 void Show_Animations(Ui_State *ui, Rectangle bondry)
 {
+    Vector2 MousePos = GetMousePosition();
     Rectangle box = {
         .x = bondry.x + Padding,
         .y = bondry.y + Padding + (3 * field_height),
@@ -182,11 +183,14 @@ void Show_Animations(Ui_State *ui, Rectangle bondry)
         .height = bondry.height - (2 * Padding) - (3 * field_height) + (2 * thick)
     };
 
+    Color color = GetColor(0x181818ff);
+
     DrawRectangleLinesEx(box_outline, thick, WHITE);
-    DrawRectangleRec(box, GetColor(0x181818ff));
+    DrawRectangleRec(box, color);
 
     if (ui->animations.items == NULL) return;
     for (size_t i = 0; i < ui->animations.count; ++i) {
+        Color tiny_color = GetColor(0x181818ff);
         Rectangle tiny_box = {
             .x = box.x + Padding,
             .y = box.y + font_size + (Padding * (i) * 2) + (i*Padding),
@@ -199,6 +203,17 @@ void Show_Animations(Ui_State *ui, Rectangle bondry)
             .width = font_size,
             .height = font_size
         };
+        if (&ui->animations.items[ui->currentAnimationIndex] == &ui->animations.items[i]) {
+            tiny_color = ColorBrightness(color, 0.3f);
+        }
+        if (CheckCollisionPointRec(MousePos, tiny_box)) {
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                ui->currentAnimationIndex = i;
+                ui->IsAnimationSelected = true;
+            }
+            tiny_color = ColorBrightness(color, 0.5f);
+        }
+        DrawRectangleRec(tiny_box, tiny_color);
         DrawRectangleLinesEx(tiny_box, thick, WHITE);
         BeginScissorMode(tiny_box.x, tiny_box.y, (Delete_box.x - font_size) - tiny_box.x, tiny_box.height);
         DrawTextEx(ui->font, ui->animations.items[i].name, (Vector2) {
@@ -211,7 +226,7 @@ void Show_Animations(Ui_State *ui, Rectangle bondry)
     }
 }
 
-void Animation_Panel(Ui_State *ui, Rectangle bondry) {
+void Animations_Panel(Ui_State *ui, Rectangle bondry) {
     Color color = GetColor(0x252525ff);
     DrawRectangleRec(bondry, color);
     add_Animation(ui, bondry);

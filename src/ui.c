@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdio.h>
 #define  NOB_IMPLEMENTATION
 #include <nob.h>
 #include <ui.h>
@@ -14,14 +15,29 @@ Canvas c;
 void ui_init()
 {
     UI.font = LoadFont("res/Fonts/0xProtoNerdFont-Regular.ttf");
+    UI.currentAnimationIndex = 0;
+    UI.IsAnimationSelected = false;
     da_append(&UI.texture_paths, "res/Player.png");
     Init_Canvas(&c, &UI);
 }
 
 
-void right_panel(Rectangle bondry) {
-    Color color = GetColor(0x12fa13ff);
+void Animation_Panel(Rectangle bondry) {
+    Color color = GetColor(0x252525ff);
     DrawRectangleRec(bondry, color);
+    // TODO: Cuntinue this shit
+    char text[256];
+    if (!UI.IsAnimationSelected) {
+        sprintf(text, " NO Animation Has Been\n Selected");
+    }
+    else {
+        snprintf(text, 256, "Selected : %s", UI.animations.items[UI.currentAnimationIndex].name);
+    }
+
+    DrawTextEx(UI.font, text, (Vector2) {
+        .x = bondry.x,
+        .y = bondry.y + bondry.height/2 - 12.0f
+    }, 24.0f, 0, WHITE);
 }
 
 
@@ -62,8 +78,8 @@ void ui_update()
         .height = h - (InfoPanelHeight + 2 * padding)
     };
     Info_Panel(&c, InfoPanelBondry, &UI);
-    right_panel(rightPanelBondry);
-    Animation_Panel(&UI, leftPanelBondry);
+    Animation_Panel(rightPanelBondry);
+    Animations_Panel(&UI, leftPanelBondry);
     Draw_Canvas(canvasBondry, &c);
 }
 
