@@ -1,5 +1,5 @@
-#include "raylib.h"
 #include <nob.h>
+#include <stdlib.h>
 #include <ui.h>
 #include <Animations.h>
 
@@ -203,11 +203,33 @@ void Show_Animations(Ui_State *ui, Rectangle bondry)
             .width = font_size,
             .height = font_size
         };
-        if (&ui->animations.items[ui->currentAnimationIndex] == &ui->animations.items[i]) {
+        if (&ui->animations.items[ui->currentAnimationIndex] == &ui->animations.items[i] && ui->IsAnimationSelected) {
             tiny_color = ColorBrightness(color, 0.3f);
         }
         if (CheckCollisionPointRec(MousePos, tiny_box)) {
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            if (CheckCollisionPointRec(MousePos, Delete_box)) {
+                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                    if (ui->currentAnimationIndex == i && ui->IsAnimationSelected) {
+                        ui->currentAnimationIndex = 0;
+                        ui->IsAnimationSelected = false;
+                    }
+                    else if (ui->currentAnimationIndex == (ui->animations.count - 1) && ui->IsAnimationSelected) ui->currentAnimationIndex = i;
+
+                    if (ui->animations.count > 1) {
+                        ui->animations.items[i] = ui->animations.items[ui->animations.count - 1];
+                    }
+                    else if (ui->animations.count == 1){
+                        ui->currentAnimationIndex = 0;
+                        ui->IsAnimationSelected = false;
+                        free(ui->animations.items);
+                        ui->animations.items = NULL;
+                        ui->animations.count = 0;
+                        ui->animations.capacity = 0;
+                        return;
+                    }
+                    ui->animations.count--;
+                }
+            } else if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                 ui->currentAnimationIndex = i;
                 ui->IsAnimationSelected = true;
             }
@@ -222,7 +244,7 @@ void Show_Animations(Ui_State *ui, Rectangle bondry)
         },
         font_size, 0,WHITE);
         EndScissorMode();
-        DrawRectangleRec(Delete_box, RED);
+        DrawRectangleRec(Delete_box, RED); // TODO: Try rendring a Texture (Logo)
     }
 }
 
