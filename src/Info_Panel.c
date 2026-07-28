@@ -101,7 +101,7 @@ void Info_Section(Canvas *c, Rectangle bondry, Ui_State *ui)       // Print the 
     String_View cstr_Info = {0};
     if (c->Select_Mode) {
         sb_appendf(&sb, "Slection Box: X = %.2f, Y : %.2f | Frame Size: %.2fx%.2f (PX)",
-                      c->Selecte_Box.x, c->Selecte_Box.y, c->Selecte_Box.width, c->Selecte_Box.height);
+                      c->edited_frame.x, c->edited_frame.y, c->edited_frame.width, c->edited_frame.height);
         sb_append_null(&sb);
         cstr_Info = sb_to_sv(sb);
     }

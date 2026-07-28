@@ -1,8 +1,10 @@
+#include <animation.h>
 #include <canvas.h>
 #include <raylib.h>
 #include <stdbool.h>
 #include <string.h>
 #include <math.h>
+#include <nob.h>
 
 #define SELECT_BOX_SIZE     4 // px
 #define COURSURE_BOX_SIZE   4
@@ -20,9 +22,11 @@ void Init_Canvas(Canvas *c, Ui_State *ui)
     c->canvasSizeLocation = GetShaderLocation(c->backgroundShader, "Canvas_size");
     c->zoom = 1.0f;
     c->canvasPos = (Vector2) {0, 0};
-    c->Selecte_Box = (Rectangle) {0};
+    c->edited_frame = (Rectangle) {0};
+    c->selected_frame = (Rectangle) {0};
     c->firstclick = true;
     c->Select_Mode = false;
+    c->drawSelectedFrameMode = false;
 }
 
 void canvas_background(Rectangle bondry, float *GridSize, Canvas *c)
@@ -130,35 +134,64 @@ Rectangle Preview_mode(Canvas *c, Rectangle bondry, Rectangle *Frame )
     return bondry;
 }
 
-void Draw_Select_Box(Canvas *c, Rectangle bondry, float thick)
+
+void Draw_Selected_frame(Canvas *c, Rectangle bondry, float thick)
 {
     DrawRectangleLinesEx(
         (Rectangle) {
-            .x = c->Selecte_Box.x * c->zoom + bondry.x - thick,
-            .y = c->Selecte_Box.y * c->zoom + bondry.y - thick,
-            .width = c->Selecte_Box.width * c->zoom + thick*2,
-            .height = c->Selecte_Box.height * c->zoom + thick*2
+            .x = c->selected_frame.x * c->zoom + bondry.x - thick,
+            .y = c->selected_frame.y * c->zoom + bondry.y - thick,
+            .width = c->selected_frame.width * c->zoom + thick*2,
+            .height = c->selected_frame.height * c->zoom + thick*2
         }
         , thick ,BLUE);
     DrawRectangleLinesEx(
         (Rectangle) {
-            .x = c->Selecte_Box.x * c->zoom + bondry.x,
-            .y = c->Selecte_Box.y * c->zoom + bondry.y,
-            .width = c->Selecte_Box.width * c->zoom,
-            .height = c->Selecte_Box.height * c->zoom
+            .x = c->selected_frame.x * c->zoom + bondry.x,
+            .y = c->selected_frame.y * c->zoom + bondry.y,
+            .width = c->selected_frame.width * c->zoom,
+            .height = c->selected_frame.height * c->zoom
         }
         , 1.0f , BLACK);
     DrawRectangleRec(
         (Rectangle) {
-            .x = c->Selecte_Box.x * c->zoom + bondry.x,
-            .y = c->Selecte_Box.y * c->zoom + bondry.y,
-            .width = c->Selecte_Box.width * c->zoom,
-            .height = c->Selecte_Box.height * c->zoom
+            .x = c->selected_frame.x * c->zoom + bondry.x,
+            .y = c->selected_frame.y * c->zoom + bondry.y,
+            .width = c->selected_frame.width * c->zoom,
+            .height = c->selected_frame.height * c->zoom
         }
         ,ColorAlpha(BLUE, 0.25f));
 }
 
-void Select_box(Canvas *c, Rectangle bondry)
+void Draw_edited_frame(Canvas *c, Rectangle bondry, float thick)
+{
+    DrawRectangleLinesEx(
+        (Rectangle) {
+            .x = c->edited_frame.x * c->zoom + bondry.x - thick,
+            .y = c->edited_frame.y * c->zoom + bondry.y - thick,
+            .width = c->edited_frame.width * c->zoom + thick*2,
+            .height = c->edited_frame.height * c->zoom + thick*2
+        }
+        , thick ,BLUE);
+    DrawRectangleLinesEx(
+        (Rectangle) {
+            .x = c->edited_frame.x * c->zoom + bondry.x,
+            .y = c->edited_frame.y * c->zoom + bondry.y,
+            .width = c->edited_frame.width * c->zoom,
+            .height = c->edited_frame.height * c->zoom
+        }
+        , 1.0f , BLACK);
+    DrawRectangleRec(
+        (Rectangle) {
+            .x = c->edited_frame.x * c->zoom + bondry.x,
+            .y = c->edited_frame.y * c->zoom + bondry.y,
+            .width = c->edited_frame.width * c->zoom,
+            .height = c->edited_frame.height * c->zoom
+        }
+        ,ColorAlpha(BLUE, 0.25f));
+}
+
+void Select_box(Ui_State *ui, Canvas *c, Rectangle bondry)
 {
     Vector2 MousePos = GetMousePosition();
     if (CheckCollisionPointRec(MousePos, bondry)) {
@@ -189,6 +222,8 @@ void Select_box(Canvas *c, Rectangle bondry)
         }
         if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
             c->Select_Mode = false;
+            ui->IsFrameSelected = false;
+            c->drawSelectedFrameMode = false;
         }
     }
     if (c->Select_Mode) {
@@ -197,12 +232,12 @@ void Select_box(Canvas *c, Rectangle bondry)
         int min_y = fminf(c->FirstClickPos.y, c->SecondClickPos.y);
         int max_y = fmaxf(c->FirstClickPos.y, c->SecondClickPos.y);
 
-        c->Selecte_Box.x = min_x * SELECT_BOX_SIZE;
-        c->Selecte_Box.y = min_y * SELECT_BOX_SIZE;
-        c->Selecte_Box.width  = (max_x - min_x + 1) * SELECT_BOX_SIZE;
-        c->Selecte_Box.height = (max_y - min_y + 1) * SELECT_BOX_SIZE;
+        c->edited_frame.x = min_x * SELECT_BOX_SIZE;
+        c->edited_frame.y = min_y * SELECT_BOX_SIZE;
+        c->edited_frame.width  = (max_x - min_x + 1) * SELECT_BOX_SIZE;
+        c->edited_frame.height = (max_y - min_y + 1) * SELECT_BOX_SIZE;
 
-        Draw_Select_Box(c, bondry, 6.0f);
+        Draw_edited_frame(c, bondry, 6.0f);
     }
 }
 
@@ -227,23 +262,37 @@ void Draw_Box_Around_courser(Canvas *c, Rectangle bondry)
     }
 }
 
-void Draw_Canvas(Rectangle bondry, Canvas *c)
+void Draw_Canvas(Ui_State *ui, Rectangle bondry, Canvas *c)
 {
-    Rectangle Frame = {0};
+    Rectangle Frame_v = {0};
     Rectangle zoomedBondry = {0};
     switch (c->state) {
-        case PREVIEW: zoomedBondry = Preview_mode(c, bondry, &Frame); break;
-        case EDIT_FRAMES: zoomedBondry = Edit_mode(c, bondry, &Frame); break;
+        case PREVIEW: zoomedBondry = Preview_mode(c, bondry, &Frame_v); break;
+        case EDIT_FRAMES: zoomedBondry = Edit_mode(c, bondry, &Frame_v); break;
     }
 
     BeginScissorMode(bondry.x, bondry.y, bondry.width, bondry.height);
     // Background Pattren:
     float GridSize = 16.0f * c->zoom;
     canvas_background(zoomedBondry, &GridSize, c);
+    static int next_frame_id = 1;
+    if (c->Select_Mode && IsKeyPressed(KEY_F) && ui->IsAnimationSelected) {
+        Frame tmp = (Frame) {
+            .cords = c->edited_frame,
+            .hitbox_index = 0,
+            .texture_index = 0,
+            .ID = next_frame_id++
+        };
+        da_append(&ui->animations.items[ui->currentAnimationIndex].frames, tmp);
+        c->Select_Mode = false;
+    }
 
-    DrawTexturePro(c->texture, Frame, zoomedBondry, (Vector2) {0, 0}, 0.0f, WHITE);
-    Select_box(c, zoomedBondry); // Create And Draw The Select Box
+    DrawTexturePro(c->texture, Frame_v, zoomedBondry, (Vector2) {0, 0}, 0.0f, WHITE);
+    Select_box(ui, c, zoomedBondry); // Create And Draw The Select Box
     Draw_Box_Around_courser(c, zoomedBondry);
+    if (c->drawSelectedFrameMode && ui->IsFrameSelected) {
+        Draw_Selected_frame(c, zoomedBondry, 6.0f);
+    }
     EndScissorMode();
 
     DrawRectangleLinesEx(bondry, 1.8f, WHITE);

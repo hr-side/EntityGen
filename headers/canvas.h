@@ -24,15 +24,17 @@ typedef struct {
     float zoom;
     Vector2 canvasPos;
 
-    Rectangle Selecte_Box;
+    Rectangle edited_frame;
+    Rectangle selected_frame;
     bool firstclick;
     Vector2 FirstClickPos;
     Vector2 SecondClickPos;
     bool Select_Mode;
+    bool drawSelectedFrameMode;
 
 } Canvas;
 
 void Init_Canvas(Canvas *c, Ui_State *ui);
-void Draw_Canvas(Rectangle bondry, Canvas *c);
+void Draw_Canvas(Ui_State *ui, Rectangle bondry, Canvas *c);
 
 #endif// __CANVAS_H_

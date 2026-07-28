@@ -28,10 +28,10 @@ void Export_Data(Canvas *c, Ui_State *ui)
         sb_appendf(&File_Data, "            \"loops\" : %s,\n", ui->animations.items[i].loops ? "true" : "false");
         sb_appendf(&File_Data, "            \"frames\": [\n"); 
         sb_appendf(&File_Data, "                {\"x\" : %.2f, \"y\" : %.2f,\"width\" : %.2f,\"height\" : %.2f}\n",
-                   c->Selecte_Box.x,
-                   c->Selecte_Box.y,
-                   c->Selecte_Box.width,
-                   c->Selecte_Box.height); 
+                   c->edited_frame.x,
+                   c->edited_frame.y,
+                   c->edited_frame.width,
+                   c->edited_frame.height); 
         sb_appendf(&File_Data, "            ]\n"); 
         sb_appendf(&File_Data, "        },\n");
     }
@@ -40,10 +40,10 @@ void Export_Data(Canvas *c, Ui_State *ui)
     sb_appendf(&File_Data, "            \"loops\" : %s,\n", ui->animations.items[ui->animations.count - 1].loops ? "true" : "false");
     sb_appendf(&File_Data, "            \"frames\": [\n"); 
     sb_appendf(&File_Data, "                {\"x\" : %.2f, \"y\" : %.2f,\"width\" : %.2f,\"height\" : %.2f}\n",
-               c->Selecte_Box.x,
-               c->Selecte_Box.y,
-               c->Selecte_Box.width,
-               c->Selecte_Box.height); 
+               c->edited_frame.x,
+               c->edited_frame.y,
+               c->edited_frame.width,
+               c->edited_frame.height); 
     sb_appendf(&File_Data, "            ]\n"); 
     sb_appendf(&File_Data, "        }\n");
     sb_appendf(&File_Data, "    }\n");

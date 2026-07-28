@@ -5,8 +5,9 @@
 
 typedef struct {
     Rectangle cords;
-    size_t Texture_index;
-    size_t Hitbox_index;
+    size_t texture_index;
+    size_t hitbox_index;
+    size_t ID;
 } Frame;
 
 typedef struct {

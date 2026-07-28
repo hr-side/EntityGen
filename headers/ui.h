@@ -19,6 +19,8 @@ typedef struct {
     const char *import_Path;
 
     size_t currentAnimationIndex;
+    size_t currentVisiableFrameIndex;
+    bool IsFrameSelected;
     bool IsAnimationSelected;
     Animations animations;
 } Ui_State;

@@ -1,4 +1,3 @@
-#include "raylib.h"
 #include <nob.h>
 #include <stdlib.h>
 #include <ui.h>
@@ -222,11 +221,13 @@ void Show_Animations(Ui_State *ui, Rectangle bondry)
                     else if (ui->currentAnimationIndex == (ui->animations.count - 1) && ui->IsAnimationSelected) ui->currentAnimationIndex = i;
 
                     if (ui->animations.count > 1) {
+                        free(ui->animations.items[i].frames.items);
                         ui->animations.items[i] = ui->animations.items[ui->animations.count - 1];
                     }
                     else if (ui->animations.count == 1){
                         ui->currentAnimationIndex = 0;
                         ui->IsAnimationSelected = false;
+                        free(ui->animations.items[i].frames.items);
                         free(ui->animations.items);
                         ui->animations.items = NULL;
                         ui->animations.count = 0;
@@ -238,6 +239,7 @@ void Show_Animations(Ui_State *ui, Rectangle bondry)
             } else if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                 ui->currentAnimationIndex = i;
                 ui->IsAnimationSelected = true;
+                ui->IsFrameSelected = false;
             }
             tiny_color = ColorBrightness(color, 0.5f);
         }
