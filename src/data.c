@@ -1,5 +1,6 @@
 #include <data.h>
 #include <stddef.h>
+#include <string.h>
 #include <unistd.h>
 #define NOB_IMPLIMENTAITON
 #include <nob.h>
@@ -13,9 +14,29 @@ void Export_Data(Canvas *c, Ui_State *ui)
 
     sb_appendf(&File_Data, "    \"texturePath\": [\n"); 
     for (size_t i = 0; i < ui->texture_paths.count - 1; ++i) {
-        sb_appendf(&File_Data, "        \"%s\",\n", ui->texture_paths.items[i]);
+        String_Builder ProcData = {0};
+        size_t length = strlen(ui->texture_paths.items[i]);
+        for (size_t j = 0; j < length; ++j) {
+            if (ui->texture_paths.items[i][j] == '\\') {
+                sb_appendf(&ProcData, "\\\\");
+                continue;
+            }
+            sb_append(&ProcData, ui->texture_paths.items[i][j]);
+        }
+        sb_append_null(&ProcData);
+        sb_appendf(&File_Data, "        \"%s\",\n", ProcData.items);
     }
-    sb_appendf(&File_Data, "        \"%s\"\n", ui->texture_paths.items[ui->texture_paths.count - 1]);
+    String_Builder ProcData = {0};
+    size_t length = strlen(ui->texture_paths.items[ui->texture_paths.count - 1]);
+    for (size_t j = 0; j < length; ++j) {
+        if (ui->texture_paths.items[ui->texture_paths.count - 1][j] == '\\') {
+            sb_appendf(&ProcData, "\\\\");
+            continue;
+        }
+        sb_append(&ProcData, ui->texture_paths.items[ui->texture_paths.count - 1][j]);
+    }
+    sb_append_null(&ProcData);
+    sb_appendf(&File_Data, "        \"%s\"\n", ProcData.items);
     sb_appendf(&File_Data, "    ],\n");
 
     if (ui->animations.count == 0) {

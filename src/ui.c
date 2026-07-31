@@ -16,7 +16,10 @@ void ui_init()
     UI.font = LoadFont("res/Fonts/0xProtoNerdFont-Regular.ttf");
     UI.currentAnimationIndex = 0;
     UI.IsAnimationSelected = false;
+
+    UI.texture_paths = (Texture_Paths) {0};
     da_append(&UI.texture_paths, "res/Player.png");
+    UI.NeedsLoading = true;
     Init_Canvas(&c, &UI);
 }
 
@@ -64,7 +67,7 @@ void ui_update()
 
 void ui_unload()
 {
-    UnloadTexture(c.texture);
+    Unload_Textures(&c);
     UnloadShader(c.backgroundShader);
     UnloadFont(UI.font);
 }

@@ -14,8 +14,11 @@ typedef struct {
 typedef struct {
     Font font;
 
-    const char *output_path;
     Texture_Paths texture_paths;
+    size_t current_texture_index;
+    bool NeedsLoading;
+
+    const char *output_path;
     const char *import_Path;
 
     size_t currentAnimationIndex;

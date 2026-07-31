@@ -2,6 +2,8 @@
 #include <canvas.h>
 #include <raylib.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <nob.h>
@@ -10,12 +12,53 @@
 #define COURSURE_BOX_SIZE   4
 #define PREVIEW_FRAME_SIZE 32 // px
 
+void load_textures(Canvas *c, Ui_State *ui)
+{   
+    if (!ui->NeedsLoading) return;
+    if (ui->texture_paths.count == 0) return;
+
+    size_t last_idx = ui->texture_paths.count - 1;
+    const char *target_path = ui->texture_paths.items[last_idx];
+
+    nob_log(NOB_INFO, "Loading Textures : ");
+
+    int found_index = -1;
+    for (size_t j = 0; j < c->textures_visited.count; ++j) {
+        nob_log(NOB_INFO, "Cached : %s", c->textures_visited.items[j]);
+        nob_log(NOB_INFO, "  Comparing search target '%s' against visited[%zu] '%s'", 
+                target_path, j, c->textures_visited.items[j]);
+        if (strcmp(c->textures_visited.items[j], target_path) == 0) {
+            found_index = (int)j;
+            break;
+        }
+    }
+
+    if (found_index != -1) {
+        nob_log(NOB_INFO, "      Found : Path|Index : %s|%d", target_path, found_index);
+        ui->current_texture_index = (size_t)found_index;
+        ui->NeedsLoading = false;
+        return;
+    }
+
+    nob_log(NOB_INFO, "     Path|Index : %s|%zu", target_path, last_idx);
+    da_append(&c->textures_visited, target_path);
+
+    Image tmpI = LoadImage(target_path);
+    Texture2D tmpT = LoadTextureFromImage(tmpI);
+    da_append(&c->textures, tmpT);
+
+    c->texture = &c->textures.items[c->textures_visited.count - 1];
+    ui->current_texture_index = c->textures_visited.count - 1;
+    ui->NeedsLoading = false;
+}
+
 void Init_Canvas(Canvas *c, Ui_State *ui)
 {
     memset(c, 0, sizeof(Canvas));
-    Image image = LoadImage(ui->texture_paths.items[0]);
-    c->texture = LoadTextureFromImage(image);
-    UnloadImage(image);
+    c->textures = (Textures) {0};
+    c->textures_visited = (Textures_Visited) {0};
+    load_textures(c, ui);
+    c->texture = &c->textures.items[ui->current_texture_index];
     c->state = EDIT_FRAMES;
     c->backgroundShader = LoadShader( NULL, "res/Shaders/Canvas_Background.fs");
     c->gridSizeLocation = GetShaderLocation(c->backgroundShader, "Grid_size_");
@@ -52,13 +95,13 @@ void canvas_background(Rectangle bondry, float *GridSize, Canvas *c)
 Rectangle Edit_mode(Canvas *c, Rectangle bondry, Rectangle *Frame)
 {
     if (c->zoom == 1.0f && c->canvasPos.x == 0.0f && c->canvasPos.y == 0.0f) {
-        float scaleX = bondry.width / (float)c->texture.width;
-        float scaleY = bondry.height / (float)c->texture.height;
+        float scaleX = bondry.width / (float)(*c->texture).width;
+        float scaleY = bondry.height / (float)c->texture->height;
 
         c->zoom = (scaleX < scaleY) ? scaleX : scaleY;
 
-        c->canvasPos.x = bondry.x + (bondry.width - ((float)c->texture.width * c->zoom)) / 2.0f;
-        c->canvasPos.y = bondry.y + (bondry.height - ((float)c->texture.height * c->zoom)) / 2.0f;
+        c->canvasPos.x = bondry.x + (bondry.width - ((float)c->texture->width * c->zoom)) / 2.0f;
+        c->canvasPos.y = bondry.y + (bondry.height - ((float)c->texture->height * c->zoom)) / 2.0f;
     }
 
     Vector2 mousePos = GetMousePosition();
@@ -102,13 +145,13 @@ Rectangle Edit_mode(Canvas *c, Rectangle bondry, Rectangle *Frame)
         }
 
     }
-    float textureZoomedWidth = (float)c->texture.width * c->zoom;
-    float textureZoomedHeight = (float)c->texture.height * c->zoom;
+    float textureZoomedWidth = (float)(*c->texture).width * c->zoom;
+    float textureZoomedHeight = (float)(*c->texture).height * c->zoom;
 
     Frame->x = 0;
     Frame->y = 0;
-    Frame->width = c->texture.width;
-    Frame->height = c->texture.height;
+    Frame->width = (*c->texture).width;
+    Frame->height = (*c->texture).height;
 
     return (Rectangle) {
         .x = c->canvasPos.x,
@@ -121,8 +164,8 @@ Rectangle Edit_mode(Canvas *c, Rectangle bondry, Rectangle *Frame)
 
 Rectangle Preview_mode(Canvas *c, Rectangle bondry, Rectangle *Frame )
 {
-    float scaleX = bondry.width / (float)c->texture.width;
-    float scaleY = bondry.height / (float)c->texture.height;
+    float scaleX = bondry.width / (float)(*c->texture).width;
+    float scaleY = bondry.height / (float)(*c->texture).height;
 
     c->zoom = (scaleX < scaleY) ? scaleX : scaleY;
 
@@ -264,6 +307,8 @@ void Draw_Box_Around_courser(Canvas *c, Rectangle bondry)
 
 void Draw_Canvas(Ui_State *ui, Rectangle bondry, Canvas *c)
 {
+    c->texture = &c->textures.items[ui->current_texture_index];
+
     Rectangle Frame_v = {0};
     Rectangle zoomedBondry = {0};
     switch (c->state) {
@@ -280,14 +325,14 @@ void Draw_Canvas(Ui_State *ui, Rectangle bondry, Canvas *c)
         Frame tmp = (Frame) {
             .cords = c->edited_frame,
             .hitbox_index = 0,
-            .texture_index = 0,
+            .texture_index = ui->current_texture_index,
             .ID = next_frame_id++
         };
         da_append(&ui->animations.items[ui->currentAnimationIndex].frames, tmp);
         c->Select_Mode = false;
     }
 
-    DrawTexturePro(c->texture, Frame_v, zoomedBondry, (Vector2) {0, 0}, 0.0f, WHITE);
+    DrawTexturePro(*c->texture, Frame_v, zoomedBondry, (Vector2) {0, 0}, 0.0f, WHITE);
     Select_box(ui, c, zoomedBondry); // Create And Draw The Select Box
     Draw_Box_Around_courser(c, zoomedBondry);
     if (c->drawSelectedFrameMode && ui->IsFrameSelected) {
@@ -296,4 +341,14 @@ void Draw_Canvas(Ui_State *ui, Rectangle bondry, Canvas *c)
     EndScissorMode();
 
     DrawRectangleLinesEx(bondry, 1.8f, WHITE);
+}
+
+void Unload_Textures(Canvas *c)
+{
+    UnloadTexture(*c->texture);
+    for (size_t i = 0; i < c->textures.count; ++i) {
+        UnloadTexture(c->textures.items[i]);
+    }
+    free(c->textures.items);
+    free(c->textures_visited.items);
 }

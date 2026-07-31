@@ -1,3 +1,4 @@
+#include <canvas.h>
 #include <Info_Panel.h>
 #include <tinyfiledialogs.h>
 #include <data.h>
@@ -114,10 +115,61 @@ void Info_Section(Canvas *c, Rectangle bondry, Ui_State *ui)       // Print the 
     }
 }
 
+void II_Dialog(Canvas *c, Ui_State *ui)
+{
+    char const * filter_params[] = { "*.png", "*.jpg", "*.jpeg" };
+    const char* path = tinyfd_openFileDialog("Import Image File", "./",
+                                            ARRAY_LEN(filter_params), filter_params,
+                                            "Image File", 0);
+    if (path == NULL) return;
+    da_append(&ui->texture_paths, strdup(path));
+    ui->NeedsLoading = true;
+    load_textures(c, ui);
+}
+
+void Import_Image_Button(Rectangle bondry, Canvas *c, Ui_State *ui)
+{
+    static float box_height = 50;
+    static float box_width = 260;
+
+    Rectangle Box = {
+        .x = bondry.x + box_width*0.075f,
+        .y = bondry.y + bondry.height*0.5f - box_height*0.5f,
+        .width = box_width,
+        .height = box_height
+    };
+    float thick = 2.5f;
+    Color color;
+    Vector2 MousePos = GetMousePosition();
+    if (CheckCollisionPointRec(MousePos, Box)) {
+        if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) II_Dialog(c, ui);
+        color = ColorBrightness(GetColor(0x181818ff), 0.2f);
+        thick = 1.5f;
+    }
+    else {
+        color = GetColor(0x181818ff);
+    }
+
+    const char *text = "Import Image";
+    const int font_size = 24;
+    DrawRectangleRec(Box, color);
+    DrawRectangleLinesEx((Rectangle) {
+            .x = Box.x - thick,
+            .y = Box.y - thick,
+            .width = Box.width + 2*thick,
+            .height = Box.height + 2*thick
+        }, thick, WHITE);
+    DrawTextEx(ui->font, text, (Vector2) {
+                    .x = Box.x + Box.width/2 - MeasureTextEx(ui->font, text, font_size, 0).x/2,
+                    .y = Box.y + Box.height/2 - ((float)font_size/2)
+                }, font_size, 0, WHITE);
+}
+
 void Info_Panel(Canvas *c,Rectangle bondry, Ui_State *ui) {
     Color color = GetColor(0x252525ff);
     DrawRectangleRec(bondry, color);
     Export_Button(c, bondry, ui);
     Import_Button(c, bondry, ui);
     Info_Section(c, bondry, ui);
+    Import_Image_Button(bondry, c, ui);
 }

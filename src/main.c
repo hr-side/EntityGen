@@ -19,7 +19,6 @@ int main() {
 
         ui_update();
 
-        DrawFPS(10, 10);
         EndDrawing();
     }
     ui_unload();

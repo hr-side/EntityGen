@@ -9,11 +9,22 @@ typedef enum {
     EDIT_FRAMES
 } CANVAS_STATE;
 
-// TODO: It sorta of becoming a State struct
-// we should seprate all the input/output paths into a deffrent struct
-// maybe we should make the `ui.h` hold the struct.
 typedef struct {
-    Texture2D texture;
+    Texture2D *items;
+    size_t count;
+    size_t capacity;
+} Textures;
+
+typedef struct {
+    const char* *items;
+    size_t count;
+    size_t capacity;
+} Textures_Visited;
+
+typedef struct {
+    Texture2D *texture;
+    Textures textures;
+    Textures_Visited textures_visited;
     Shader backgroundShader;
 
     int gridSizeLocation;
@@ -34,7 +45,10 @@ typedef struct {
 
 } Canvas;
 
+
 void Init_Canvas(Canvas *c, Ui_State *ui);
 void Draw_Canvas(Ui_State *ui, Rectangle bondry, Canvas *c);
+void load_textures(Canvas *c, Ui_State *ui);
+void Unload_Textures(Canvas *c);
 
 #endif// __CANVAS_H_
