@@ -5,5 +5,6 @@
 
 void Export_Data(Canvas *c, Ui_State *ui);
 void Import_Data(Canvas *c, Ui_State *ui);
+bool Parse(Ui_State *ui, Canvas *c);
 
 #endif //__DATA_H

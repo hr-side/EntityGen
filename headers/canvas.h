@@ -35,6 +35,8 @@ typedef struct {
     float zoom;
     Vector2 canvasPos;
 
+    int next_frame_id;
+
     Rectangle edited_frame;
     Rectangle selected_frame;
     bool firstclick;

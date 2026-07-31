@@ -1,5 +1,6 @@
 #include <canvas.h>
 #include <Info_Panel.h>
+#include <string.h>
 #include <tinyfiledialogs.h>
 #include <data.h>
 #include <nob.h>
@@ -57,10 +58,14 @@ void Export_Button(Canvas *c, Rectangle bondry, Ui_State *ui)
 void ID_Dialog(Canvas *c, Ui_State *ui)
 {
     char const * filter_params[] = { "*.json" };
-    ui->import_Path = tinyfd_openFileDialog("Import JSON Data File", "./",
+    char const * path = tinyfd_openFileDialog("Import JSON Data File", "./",
                                            ARRAY_LEN(filter_params), filter_params,
                                            "JSON File", 0);
-    if (ui->output_path == NULL) return;
+    ui->import_Path = strdup(path);
+    if (ui->import_Path == NULL) {
+        nob_log(NOB_WARNING, "Output Path is invalide");
+        return;
+    }
     Import_Data(c, ui);
 }
 

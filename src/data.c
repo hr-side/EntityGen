@@ -103,7 +103,6 @@ save:
 
 void Import_Data(Canvas *c, Ui_State *ui)
 {
-    UNUSED(c);  // Import and parse the files,
-                // Not yet tho until we can save a file then we try parsing it
-    UNUSED(ui);
+    UNUSED(c);
+    Parse(ui, c); 
 }

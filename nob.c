@@ -28,7 +28,9 @@
 Cmd cmd = {0};
 
 const char* thirdparty[] = {
-    "tinyfiledialogs"
+    "tinyfiledialogs",
+    "cJSON\\cJSON",
+    "cJSON\\cJSON_Utils"
 };
 const char* src_files[] = {
     "main.c",
@@ -37,27 +39,44 @@ const char* src_files[] = {
     "data.c",
     "Info_Panel.c",
     "Animations_Panel.c",
-    "Animation_Panel.c"
+    "Animation_Panel.c",
+    "parse.c"
 };
 
-void build_thirdparty(Cmd *cmd)
+int build_thirdparty(Cmd *cmd, size_t i)
 {
     mkdir_if_not_exists(SRC_BUILD_DIR);
+    mkdir_if_not_exists(SRC_BUILD_DIR"\\cJSON\\");
 
     cmd_append(cmd, COMPILER);
     cmd_append(cmd, "-w");
     cmd_append(cmd, "-c");
 
     char src_path[512];
-    snprintf(src_path, sizeof(src_path), THIRDPARTY_DIR"%s.c", thirdparty[0]);
+    snprintf(src_path, sizeof(src_path), THIRDPARTY_DIR"%s.c", thirdparty[i]);
     cmd_append(cmd, strdup(src_path));
 
     cmd_append(cmd, "-o");
 
     char obj_path[512]; 
-    snprintf(obj_path, sizeof(obj_path), SRC_BUILD_DIR"%s.o", thirdparty[0]);
+    snprintf(obj_path, sizeof(obj_path), SRC_BUILD_DIR"%s.o", thirdparty[i]);
     cmd_append(cmd, strdup(obj_path));
+
     cmd_append(cmd, "-I", HEADERS_DIR);
+
+    if (!cmd_run(cmd)) return 1;
+    return 0;
+}
+
+void build_parser(Cmd *cmd)
+{
+    cmd_append(cmd, COMPILER);
+    cmd_append(cmd, "-Wall", "-Wextra");
+    cmd_append(cmd, SRC_DIR"parse.c");
+    cmd_append(cmd, SRC_BUILD_DIR"cJSON\\cJSON.o");
+    cmd_append(cmd, SRC_BUILD_DIR"cJSON\\cJSON_Utils.o");
+    cmd_append(cmd, "-o", BUILD_DIR"parse.exe");
+    cmd_append(cmd, "-I", HEADERS_DIR, "-I", ".");
 }
 
 void build_linux(Cmd *cmd)
@@ -72,6 +91,8 @@ void build_linux(Cmd *cmd)
         cmd_append(cmd, strdup(srcs));
     }
     cmd_append(cmd, SRC_BUILD_DIR"tinyfiledialogs.o");
+    cmd_append(cmd, SRC_BUILD_DIR"cJSON/cJSON.o");
+    cmd_append(cmd, SRC_BUILD_DIR"cJSON/cJSON_Utils.o");
     cmd_append(cmd, "-I","./headers");
     cmd_append(cmd, "-I","./");
     cmd_append(cmd, "-I","/usr/local/include");
@@ -91,6 +112,8 @@ void build_win(Cmd *cmd)
         cmd_append(cmd, strdup(srcs));
     }
     cmd_append(cmd, SRC_BUILD_DIR"tinyfiledialogs.o");
+    cmd_append(cmd, SRC_BUILD_DIR"cJSON\\cJSON.o");
+    cmd_append(cmd, SRC_BUILD_DIR"cJSON\\cJSON_Utils.o");
     cmd_append(cmd, "-I","C:\\Program Files (x86)\\raylib\\include");
     cmd_append(cmd, "-I",".\\headers");
     cmd_append(cmd, "-I",".");
@@ -105,12 +128,16 @@ int main(int argc, char **argv) {
     (void) argc;
     (void) argv;
     cmd.count = 0;
-    build_thirdparty(&cmd);
-    if (!cmd_run(&cmd)) return 1;
+    build_thirdparty(&cmd, 0);
+    build_thirdparty(&cmd, 1);
+    build_thirdparty(&cmd, 2);
 
     mkdir_if_not_exists("./build");
-    build(&cmd);
 
+    // build_parser(&cmd);
+    // if (!cmd_run(&cmd)) return 1;
+
+    build(&cmd);
     nob_copy_directory_recursively("./res", "./build/res");
     if (!cmd_run(&cmd)) return 1; 
     return 0;

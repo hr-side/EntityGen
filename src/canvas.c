@@ -20,36 +20,51 @@ void load_textures(Canvas *c, Ui_State *ui)
     if (!ui->NeedsLoading) return;
     if (ui->texture_paths.count == 0) return;
 
-    size_t last_idx = ui->texture_paths.count - 1;
-    const char *target_path = ui->texture_paths.items[last_idx];
+    if (ui->texture_paths.count == 1) {
+        if (c->textures_visited.count == 1) {
+            nob_log(NOB_INFO, "Default Texture already loaded!.");
+        } else {
+            nob_log(NOB_INFO, "     Path|Index : %s|%d", ui->texture_paths.items[0], 0);
+            da_append(&c->textures_visited, ui->texture_paths.items[0]);
 
-    nob_log(NOB_INFO, "Loading Textures : ");
-
-    int found_index = -1;
-    for (size_t j = 0; j < c->textures_visited.count; ++j) {
-        nob_log(NOB_INFO, "Cached : %s", c->textures_visited.items[j]);
-        nob_log(NOB_INFO, "  Comparing search target '%s' against visited[%zu] '%s'", 
-                target_path, j, c->textures_visited.items[j]);
-        if (strcmp(c->textures_visited.items[j], target_path) == 0) {
-            found_index = (int)j;
-            break;
+            Image tmpI = LoadImage(ui->texture_paths.items[0]);
+            Texture2D tmpT = LoadTextureFromImage(tmpI);
+            da_append(&c->textures, tmpT);
+            goto clean;
         }
     }
 
-    if (found_index != -1) {
-        nob_log(NOB_INFO, "      Found : Path|Index : %s|%d", target_path, found_index);
-        ui->current_texture_index = (size_t)found_index;
-        ui->NeedsLoading = false;
-        return;
+    for (size_t i = 1; i < ui->texture_paths.count; ++i) {
+        const char *target_path = ui->texture_paths.items[i];
+
+        nob_log(NOB_INFO, "Loading Textures : ");
+
+        int found_index = -1;
+        for (size_t j = 1; j < c->textures_visited.count; ++j) {
+            nob_log(NOB_INFO, "Cached : %s", c->textures_visited.items[j]);
+            nob_log(NOB_INFO, "  Comparing search target '%s' against visited[%zu] '%s'", 
+                    target_path, j, c->textures_visited.items[j]);
+            if (strcmp(c->textures_visited.items[j], target_path) == 0) {
+                found_index = (int)j;
+            }
+
+            if (found_index != -1) {
+                nob_log(NOB_INFO, "      Found : Path|Index : %s|%d", target_path, found_index);
+                ui->current_texture_index = (size_t)found_index;
+                ui->NeedsLoading = false;
+                continue;
+            }
+        }
+
+        nob_log(NOB_INFO, "     Path|Index : %s|%zu", target_path, i);
+        da_append(&c->textures_visited, target_path);
+
+        Image tmpI = LoadImage(target_path);
+        Texture2D tmpT = LoadTextureFromImage(tmpI);
+        da_append(&c->textures, tmpT);
     }
 
-    nob_log(NOB_INFO, "     Path|Index : %s|%zu", target_path, last_idx);
-    da_append(&c->textures_visited, target_path);
-
-    Image tmpI = LoadImage(target_path);
-    Texture2D tmpT = LoadTextureFromImage(tmpI);
-    da_append(&c->textures, tmpT);
-
+clean:
     c->texture = &c->textures.items[c->textures_visited.count - 1];
     ui->current_texture_index = c->textures_visited.count - 1;
     ui->NeedsLoading = false;
@@ -73,6 +88,7 @@ void Init_Canvas(Canvas *c, Ui_State *ui)
     c->firstclick = true;
     c->Select_Mode = false;
     c->drawSelectedFrameMode = false;
+    c->next_frame_id = 1;
 }
 
 void canvas_background(Rectangle bondry, float *GridSize, Canvas *c)
@@ -396,13 +412,12 @@ void Draw_Canvas(Ui_State *ui, Rectangle bondry, Canvas *c)
     // Background Pattren:
     float GridSize = 16.0f * c->zoom;
     canvas_background(zoomedBondry, &GridSize, c);
-    static int next_frame_id = 1;
     if (c->Select_Mode && IsKeyPressed(KEY_F) && ui->IsAnimationSelected) {
         Frame tmp = (Frame) {
             .cords = c->edited_frame,
             .hitbox_index = 0,
             .texture_index = ui->current_texture_index,
-            .ID = next_frame_id++
+            .ID = c->next_frame_id++
         };
         da_append(&ui->animations.items[ui->currentAnimationIndex].frames, tmp);
         c->Select_Mode = false;
