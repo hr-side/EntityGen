@@ -8,6 +8,8 @@
 int main() {
 
     InitWindow(WIDTH, HEIGHT, "Entity Data Genearater");
+    Image windowIcon = LoadImage("res/icon.png");
+    SetWindowIcon(windowIcon);
     SetTargetFPS(60);
     ui_init();
 
