@@ -18,7 +18,7 @@ void ui_init()
     UI.IsAnimationSelected = false;
 
     UI.texture_paths = (Texture_Paths) {0};
-    da_append(&UI.texture_paths, "res/Player.png");
+    da_append(&UI.texture_paths, "res/Default.png");
     UI.NeedsLoading = true;
     Init_Canvas(&c, &UI);
 }
@@ -59,10 +59,10 @@ void ui_update()
         .height = h - (InfoPanelHeight + 2 * padding)
     };
 
+    Draw_Canvas(&UI, canvasBondry, &c);
     Info_Panel(&c, InfoPanelBondry, &UI);
     Animation_Panel(&UI, &c,rightPanelBondry);
     Animations_Panel(&UI, leftPanelBondry);
-    Draw_Canvas(&UI, canvasBondry, &c);
 }
 
 void ui_unload()

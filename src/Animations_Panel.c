@@ -98,7 +98,7 @@ void add_Animation(Ui_State *ui, Rectangle bondry)
 
     Color Add_box_color = GetColor(0x181818ff);
     if (CheckCollisionPointRec(MousePos, add_button_box)) {
-        Add_box_color = ColorBrightness(Add_box_color, 0.5f);
+        Add_box_color = ColorBrightness(Add_box_color, 0.3f);
     }
 
     DrawRectangleRec(add_button_box, Add_box_color);

@@ -258,13 +258,17 @@ void Animation_Panel_Show(Ui_State *ui, Canvas *c,Rectangle bondry)
                         ui->IsFrameSelected = true;
                         ui->currentVisiableFrameIndex = i; 
                     }
-                    tiny_color = ColorBrightness(tiny_color, 0.5f);
+                    tiny_color = ColorBrightness(tiny_color, 0.3f);
                 }
 
                 if (ui->animations.items[ui->currentAnimationIndex].frames.items[ui->currentVisiableFrameIndex].ID == ui->animations.items[ui->currentAnimationIndex].frames.items[i].ID && ui->IsFrameSelected) {
                     c->drawSelectedFrameMode = true;
                     c->selected_frame = ui->animations.items[ui->currentAnimationIndex].frames.items[ui->currentVisiableFrameIndex].cords;
-                    tiny_color = ColorBrightness(tiny_color, 0.3f);
+                    tiny_color = ColorBrightness(tiny_color, 0.2f);
+                }
+                if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+                    ui->IsFrameSelected = false;
+                    c->drawSelectedFrameMode = false;
                 }
 
                 snprintf(frame_name, 256, "Frame{%zu}", i + 1);

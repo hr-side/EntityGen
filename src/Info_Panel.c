@@ -3,7 +3,10 @@
 #include <tinyfiledialogs.h>
 #include <data.h>
 #include <nob.h>
-#include <unistd.h>
+
+#if defined(__has_include) && __has_include(<unistd.h>)
+    #include <unistd.h>
+#endif
 
 void ED_Dialog(Canvas *c, Ui_State *ui)
 {
@@ -18,9 +21,9 @@ void ED_Dialog(Canvas *c, Ui_State *ui)
 void Export_Button(Canvas *c, Rectangle bondry, Ui_State *ui)
 {
     Rectangle Box = {
-        .x = bondry.width * (1 - 0.125f),
+        .x = bondry.width * (1 - 0.125f) - 250*0.25f,
         .y = bondry.height * (1 - 0.45f),
-        .width = 180,
+        .width = 250,
         .height = 30
     };
     float thick = 2.5f;
@@ -64,9 +67,9 @@ void ID_Dialog(Canvas *c, Ui_State *ui)
 void Import_Button(Canvas *c, Rectangle bondry, Ui_State *ui)
 {
     Rectangle Box = {
-        .x = bondry.width * (1 - 0.125f),
+        .x = bondry.width * (1 - 0.125f) - 250*0.25f,
         .y = bondry.height * (0.1f),
-        .width = 180,
+        .width = 250,
         .height = 30
     };
     float thick = 2.5f;
@@ -101,11 +104,18 @@ void Info_Section(Canvas *c, Rectangle bondry, Ui_State *ui)       // Print the 
     String_Builder sb = {0};
     String_View cstr_Info = {0};
     if (c->Select_Mode) {
-        sb_appendf(&sb, "Slection Box: X = %.2f, Y : %.2f | Frame Size: %.2fx%.2f (PX)",
+        sb_appendf(&sb, "Edit Frame: X = %.2f, Y : %.2f | Frame Size: %.2fx%.2f (PX)",
                       c->edited_frame.x, c->edited_frame.y, c->edited_frame.width, c->edited_frame.height);
         sb_append_null(&sb);
         cstr_Info = sb_to_sv(sb);
     }
+    else if (ui->IsFrameSelected) {
+        sb_appendf(&sb, "Selected Frame: X = %.2f, Y : %.2f | Frame Size: %.2fx%.2f (PX) | Texture_Index: %zu",
+                      c->selected_frame.x, c->selected_frame.y, c->selected_frame.width, c->selected_frame.height, ui->current_texture_index);
+        sb_append_null(&sb);
+        cstr_Info = sb_to_sv(sb);
+    }
+
     if(cstr_Info.count != 0) {
         const char *Info = nob_temp_sv_to_cstr(cstr_Info);
         DrawTextEx(ui->font, Info, (Vector2) {bondry.x + 300, bondry.height - 50}, 24, 0, RAYWHITE);

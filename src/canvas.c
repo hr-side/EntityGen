@@ -12,6 +12,9 @@
 #define COURSURE_BOX_SIZE   4
 #define PREVIEW_FRAME_SIZE 32 // px
 
+static float Padding = 7.5f;
+static int font_size = 24;
+
 void load_textures(Canvas *c, Ui_State *ui)
 {   
     if (!ui->NeedsLoading) return;
@@ -305,8 +308,81 @@ void Draw_Box_Around_courser(Canvas *c, Rectangle bondry)
     }
 }
 
+void Draw_Tabs(Rectangle bondry, Canvas *c, Ui_State *ui)
+{
+    static float thick = 1.5f;
+    static float factor = 5.0f;
+    static float field_width = 120.0f;
+    // GetFileNameWithoutExt();
+    UNUSED(ui);
+    Rectangle Tabs_Panel_box = {
+        .x = bondry.x + factor * thick,
+        .y = bondry.y + factor * thick,
+        .width = bondry.width - (factor * 2 * thick),
+        .height = bondry.height*0.1f - (factor * 2* thick)
+    };
+
+    Rectangle Tabs_Panel_box_outline = {
+        .x = bondry.x + factor * thick,
+        .y = bondry.y + factor * thick,
+        .width = bondry.width - (2 * thick * factor),
+        .height = bondry.height*0.1f - (2 * thick * factor)
+    };
+
+    DrawRectangleRec(Tabs_Panel_box, GetColor(0x181818ff));
+    DrawRectangleLinesEx(Tabs_Panel_box_outline, thick, WHITE);
+
+    for (size_t i = 1; i < c->textures_visited.count; ++i)
+    {
+        Vector2 MousePos = GetMousePosition();
+        const char *text = GetFileNameWithoutExt(c->textures_visited.items[i]);
+        Rectangle tiny_box = {
+            .x = Tabs_Panel_box.x + ((i - 1)*field_width) + (Padding * (i - 1) * 2) + (2*Padding),
+            .y = Tabs_Panel_box.y + Tabs_Panel_box.height*0.5f - (font_size),
+            .width = field_width,
+            .height = 2*font_size
+        };
+        
+        Rectangle tiny_box_outline = {
+            .x = tiny_box.x - thick,
+            .y = tiny_box.y - thick,
+            .width = tiny_box.width + (2 * thick),
+            .height = tiny_box.height + (2 * thick)
+        };
+
+        Color color = GetColor(0x252525ff);
+
+        if (CheckCollisionPointRec(MousePos, tiny_box)) {
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                ui->current_texture_index = i;
+                ui->IsFrameSelected = false;
+                c->drawSelectedFrameMode = false;
+            }
+            color = ColorBrightness(color, 0.3f);
+        }
+        
+        if (i == ui->current_texture_index) {
+            color = ColorBrightness(color, 0.15f);
+        }
+
+        DrawRectangleRec(tiny_box, color);
+        DrawRectangleLinesEx(tiny_box_outline, thick, WHITE);
+        DrawTextEx(ui->font, text,
+                   (Vector2) {
+                    .x = tiny_box.x + tiny_box.width*0.1f,
+                    .y = tiny_box.y + tiny_box.height*0.5f - font_size*0.5f
+                   },
+                   font_size, 0, WHITE);
+    }
+}
+
 void Draw_Canvas(Ui_State *ui, Rectangle bondry, Canvas *c)
 {
+    if (ui->current_texture_index == 0) {
+        DrawRectangleRec(bondry, GetColor(0x655561ff));
+        DrawRectangleLinesEx(bondry, 1.8f, WHITE);
+        return;
+    }
     c->texture = &c->textures.items[ui->current_texture_index];
 
     Rectangle Frame_v = {0};
@@ -335,9 +411,13 @@ void Draw_Canvas(Ui_State *ui, Rectangle bondry, Canvas *c)
     DrawTexturePro(*c->texture, Frame_v, zoomedBondry, (Vector2) {0, 0}, 0.0f, WHITE);
     Select_box(ui, c, zoomedBondry); // Create And Draw The Select Box
     Draw_Box_Around_courser(c, zoomedBondry);
+
     if (c->drawSelectedFrameMode && ui->IsFrameSelected) {
+        ui->current_texture_index = ui->animations.items[ui->currentAnimationIndex].frames.items[ui->currentVisiableFrameIndex].texture_index;
         Draw_Selected_frame(c, zoomedBondry, 6.0f);
     }
+
+    Draw_Tabs(bondry, c, ui);
     EndScissorMode();
 
     DrawRectangleLinesEx(bondry, 1.8f, WHITE);
