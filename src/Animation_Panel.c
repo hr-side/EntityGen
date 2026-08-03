@@ -1,3 +1,4 @@
+#include "raylib.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -217,12 +218,30 @@ void Animation_Panel_Show(Ui_State *ui, Canvas *c,Rectangle bondry)
         if (ui->animations.items[ui->currentAnimationIndex].frames.items != NULL)
         {
             char frame_name[256];
-            for (size_t i = 0; i < ui->animations.items[ui->currentAnimationIndex].frames.count; ++i) {
+            static float scroling_factor = 10.0f;
+            static float scrole_value = 0.0f;
+            if (CheckCollisionPointRec(MousePos, frames_field_box)) {
+                float contentHeight = font_size + (Padding * (ui->animations.items[ui->currentAnimationIndex].frames.count) * 2) + ((ui->animations.items[ui->currentAnimationIndex].frames.count) * Padding);
+                bool needsScroll = contentHeight > frames_field_box.height;
 
+                float Wheel = GetMouseWheelMove();
+
+                if (Wheel != 0 && needsScroll) {
+                    if (Wheel < 0) scrole_value -= scroling_factor;
+                    if (Wheel > 0) scrole_value += scroling_factor;
+
+                    float minScroll = frames_field_box.height - contentHeight;
+                    if (scrole_value > 0.0f)      scrole_value = 0.0f;
+                    if (scrole_value < minScroll) scrole_value = minScroll;
+                }
+            }
+
+            BeginScissorMode(frames_field_box.x, frames_field_box.y, frames_field_box.width, frames_field_box.height);
+            for (size_t i = 0; i < ui->animations.items[ui->currentAnimationIndex].frames.count; ++i) {
                 Color tiny_color = GetColor(0x181818ff);
                 Rectangle tiny_box = {
                     .x = frames_field_box.x + Padding,
-                    .y = frames_field_box.y + font_size + (Padding * (i) * 2) + (i*Padding),
+                    .y = frames_field_box.y + font_size + (Padding * (i) * 2) + (i*Padding) + (scrole_value),
                     .width = frames_field_box.width - (2 * Padding),
                     .height = font_size + Padding
                 };
@@ -274,14 +293,13 @@ void Animation_Panel_Show(Ui_State *ui, Canvas *c,Rectangle bondry)
                 snprintf(frame_name, 256, "Frame{%zu}", i + 1);
                 DrawRectangleRec(tiny_box, tiny_color);
                 DrawRectangleLinesEx(tiny_box, thick, WHITE);
-                BeginScissorMode(tiny_box.x, tiny_box.y, (Delete_box.x - font_size) - tiny_box.x, tiny_box.height);
                 DrawTextEx(ui->font, frame_name, (Vector2) {
                         tiny_box.x + tiny_box.width*0.1f,
                         tiny_box.y + tiny_box.height/2 - (float)font_size/2
                 }, font_size, 0,WHITE);
-                EndScissorMode();
                 DrawRectangleRec(Delete_box, RED);
             }
+            EndScissorMode();
         }
     }
 

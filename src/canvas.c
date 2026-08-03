@@ -412,6 +412,7 @@ void Draw_Canvas(Ui_State *ui, Rectangle bondry, Canvas *c)
     // Background Pattren:
     float GridSize = 16.0f * c->zoom;
     canvas_background(zoomedBondry, &GridSize, c);
+
     if (c->Select_Mode && IsKeyPressed(KEY_F) && ui->IsAnimationSelected) {
         Frame tmp = (Frame) {
             .cords = c->edited_frame,
@@ -440,7 +441,6 @@ void Draw_Canvas(Ui_State *ui, Rectangle bondry, Canvas *c)
 
 void Unload_Textures(Canvas *c)
 {
-    UnloadTexture(*c->texture);
     for (size_t i = 0; i < c->textures.count; ++i) {
         UnloadTexture(c->textures.items[i]);
     }

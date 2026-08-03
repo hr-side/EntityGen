@@ -1,3 +1,4 @@
+#include "raylib.h"
 #include <nob.h>
 #include <stdlib.h>
 #include <ui.h>
@@ -12,7 +13,7 @@ bool select_name_field = false;
 static float Padding = 20.0f;
 static float thick = 2.5f;
 static float field_height = 50.0f;
-static int font_size = 24;
+static float font_size = 24;
 
 char* Procces_char(String_Builder sd)
 {
@@ -175,12 +176,15 @@ clean:
 void Show_Animations(Ui_State *ui, Rectangle bondry)
 {
     Vector2 MousePos = GetMousePosition();
+
+
     Rectangle box = {
         .x = bondry.x + Padding,
         .y = bondry.y + Padding + (3 * field_height),
         .width = bondry.width - (2 * Padding),
         .height = bondry.height - (2 * Padding) - (3 * field_height)
     };
+
     Rectangle box_outline = {
         .x = bondry.x + Padding - thick,
         .y = bondry.y + Padding + (3 * field_height) - thick,
@@ -188,17 +192,37 @@ void Show_Animations(Ui_State *ui, Rectangle bondry)
         .height = bondry.height - (2 * Padding) - (3 * field_height) + (2 * thick)
     };
 
+
+    static float scroling_factor = 10.0f;
+    static float scrole_value = 0.0f;
+    if (CheckCollisionPointRec(MousePos, box)) {
+        float contentHeight = font_size + (Padding * (ui->animations.count) * 2) + ((ui->animations.count) * Padding);
+        bool needsScroll = contentHeight > box.height;
+
+        float Wheel = GetMouseWheelMove();
+
+        if (Wheel != 0 && needsScroll) {
+            if (Wheel < 0) scrole_value -= scroling_factor;
+            if (Wheel > 0) scrole_value += scroling_factor;
+
+            float minScroll = box.height - contentHeight;
+            if (scrole_value > 0.0f)      scrole_value = 0.0f;
+            if (scrole_value < minScroll) scrole_value = minScroll;
+        }
+    }
+
     Color color = GetColor(0x181818ff);
 
     DrawRectangleLinesEx(box_outline, thick, WHITE);
     DrawRectangleRec(box, color);
 
     if (ui->animations.items == NULL) return;
+    BeginScissorMode(box.x, box.y, box.width, box.height);
     for (size_t i = 0; i < ui->animations.count; ++i) {
         Color tiny_color = GetColor(0x181818ff);
         Rectangle tiny_box = {
             .x = box.x + Padding,
-            .y = box.y + font_size + (Padding * (i) * 2) + (i*Padding),
+            .y = box.y + font_size + (Padding * (i) * 2) + (i*Padding) + (scrole_value),
             .width = box.width - (2 * Padding),
             .height = font_size + Padding
         };
@@ -208,6 +232,11 @@ void Show_Animations(Ui_State *ui, Rectangle bondry)
             .width = font_size,
             .height = font_size
         };
+
+        // Figure out how to check if we are in the visible block or not
+        if (tiny_box.y + tiny_box.height < box.y) continue;
+        if (tiny_box.y > box.y + box.height) continue;
+
         if (&ui->animations.items[ui->currentAnimationIndex] == &ui->animations.items[i] && ui->IsAnimationSelected) {
             tiny_color = ColorBrightness(color, 0.3f);
         }
@@ -243,17 +272,21 @@ void Show_Animations(Ui_State *ui, Rectangle bondry)
             }
             tiny_color = ColorBrightness(color, 0.5f);
         }
+
         DrawRectangleRec(tiny_box, tiny_color);
         DrawRectangleLinesEx(tiny_box, thick, WHITE);
-        BeginScissorMode(tiny_box.x, tiny_box.y, (Delete_box.x - font_size) - tiny_box.x, tiny_box.height);
-        DrawTextEx(ui->font, ui->animations.items[i].name, (Vector2) {
+        {
+            // BeginScissorMode(tiny_box.x, tiny_box.y, (Delete_box.x - font_size) - tiny_box.x, tiny_box.height);
+            DrawTextEx(ui->font, ui->animations.items[i].name, (Vector2) {
                 tiny_box.x + tiny_box.width*0.1f,
                 tiny_box.y + tiny_box.height/2 - (float)font_size/2
-        },
-        font_size, 0,WHITE);
-        EndScissorMode();
+            },
+                       font_size, 0,WHITE);
+            // EndScissorMode();
+        }
         DrawRectangleRec(Delete_box, RED); // TODO: Try rendring a Texture (Logo)
     }
+    EndScissorMode();
 }
 
 void Animations_Panel(Ui_State *ui, Rectangle bondry) {

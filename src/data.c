@@ -16,32 +16,36 @@ void Export_Data(Canvas *c, Ui_State *ui)
     File_Data.count = 0;
     sb_appendf(&File_Data, "{\n");
 
-    sb_appendf(&File_Data, "    \"texturePath\": [\n"); 
-    for (size_t i = 1; i < ui->texture_paths.count - 1; ++i) {
+    if (ui->texture_paths.count > 0) {
+        sb_appendf(&File_Data, "    \"texturePath\": [\n"); 
+        for (size_t i = 1; i < ui->texture_paths.count - 1; ++i) {
+            String_Builder ProcData = {0};
+            size_t length = strlen(ui->texture_paths.items[i]);
+            for (size_t j = 0; j < length; ++j) {
+                if (ui->texture_paths.items[i][j] == '\\') {
+                    sb_appendf(&ProcData, "\\\\");
+                    continue;
+                }
+                sb_append(&ProcData, ui->texture_paths.items[i][j]);
+            }
+            sb_append_null(&ProcData);
+            sb_appendf(&File_Data, "        \"%s\",\n", ProcData.items);
+        }
         String_Builder ProcData = {0};
-        size_t length = strlen(ui->texture_paths.items[i]);
+        size_t length = strlen(ui->texture_paths.items[ui->texture_paths.count - 1]);
         for (size_t j = 0; j < length; ++j) {
-            if (ui->texture_paths.items[i][j] == '\\') {
+            if (ui->texture_paths.items[ui->texture_paths.count - 1][j] == '\\') {
                 sb_appendf(&ProcData, "\\\\");
                 continue;
             }
-            sb_append(&ProcData, ui->texture_paths.items[i][j]);
+            sb_append(&ProcData, ui->texture_paths.items[ui->texture_paths.count - 1][j]);
         }
         sb_append_null(&ProcData);
-        sb_appendf(&File_Data, "        \"%s\",\n", ProcData.items);
+        sb_appendf(&File_Data, "        \"%s\"\n", ProcData.items);
+        sb_appendf(&File_Data, "    ],\n");
+    } else {
+        sb_appendf(&File_Data, "    \"texturePath\": [],\n"); 
     }
-    String_Builder ProcData = {0};
-    size_t length = strlen(ui->texture_paths.items[ui->texture_paths.count - 1]);
-    for (size_t j = 0; j < length; ++j) {
-        if (ui->texture_paths.items[ui->texture_paths.count - 1][j] == '\\') {
-            sb_appendf(&ProcData, "\\\\");
-            continue;
-        }
-        sb_append(&ProcData, ui->texture_paths.items[ui->texture_paths.count - 1][j]);
-    }
-    sb_append_null(&ProcData);
-    sb_appendf(&File_Data, "        \"%s\"\n", ProcData.items);
-    sb_appendf(&File_Data, "    ],\n");
 
     if (ui->animations.count == 0) {
         sb_appendf(&File_Data, "    \"animations\" : {}\n");

@@ -9,7 +9,7 @@
 #include <Animations.h>
 
 Ui_State UI;
-Canvas c;
+Canvas   c;
 
 void ui_init()
 {
