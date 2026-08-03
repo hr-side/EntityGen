@@ -19,11 +19,12 @@ void load_textures(Canvas *c, Ui_State *ui)
 {   
     if (!ui->NeedsLoading) return;
     if (ui->texture_paths.count == 0) return;
+    if (ui->texture_paths.count == c->textures_visited.count) return;
 
     if (ui->texture_paths.count == 1) {
         if (c->textures_visited.count == 1) {
             nob_log(NOB_INFO, "Default Texture already loaded!.");
-        } else {
+        } else if (c->textures_visited.count < 1) {
             nob_log(NOB_INFO, "     Path|Index : %s|%d", ui->texture_paths.items[0], 0);
             da_append(&c->textures_visited, ui->texture_paths.items[0]);
 
@@ -34,34 +35,21 @@ void load_textures(Canvas *c, Ui_State *ui)
         }
     }
 
-    for (size_t i = 1; i < ui->texture_paths.count; ++i) {
+    nob_log(NOB_INFO, "Loading Textures: ");
+    for (size_t i = c->textures_visited.count; i < ui->texture_paths.count; ++i) {
         const char *target_path = ui->texture_paths.items[i];
 
-        nob_log(NOB_INFO, "Loading Textures : ");
-
-        int found_index = -1;
-        for (size_t j = 1; j < c->textures_visited.count; ++j) {
-            nob_log(NOB_INFO, "Cached : %s", c->textures_visited.items[j]);
-            nob_log(NOB_INFO, "  Comparing search target '%s' against visited[%zu] '%s'", 
-                    target_path, j, c->textures_visited.items[j]);
-            if (strcmp(c->textures_visited.items[j], target_path) == 0) {
-                found_index = (int)j;
-            }
-
-            if (found_index != -1) {
-                nob_log(NOB_INFO, "      Found : Path|Index : %s|%d", target_path, found_index);
-                ui->current_texture_index = (size_t)found_index;
-                ui->NeedsLoading = false;
-                continue;
-            }
-        }
-
-        nob_log(NOB_INFO, "     Path|Index : %s|%zu", target_path, i);
+        nob_log(NOB_INFO, "     Path|Index: %s|%zu", target_path, i);
         da_append(&c->textures_visited, target_path);
 
         Image tmpI = LoadImage(target_path);
         Texture2D tmpT = LoadTextureFromImage(tmpI);
         da_append(&c->textures, tmpT);
+    }
+
+    nob_log(NOB_INFO, " Loaded Textures:");
+    for (size_t i = 0; i < c->textures_visited.count; ++i) {
+        nob_log(NOB_INFO, "     Loaded Texture Path|Index: '%s'|%zu", c->textures_visited.items[i], i);
     }
 
 clean:
