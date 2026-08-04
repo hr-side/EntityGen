@@ -1,5 +1,5 @@
 /build/*
-/src_build/*
+/THIREDPARTY_LIBS_BUILD_DIR/*
 /libs/*
 
 nob

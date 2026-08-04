@@ -1,3 +1,4 @@
+#include <direct.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
@@ -9,15 +10,15 @@
 
 #ifdef _WIN32
 #   define COMPILER "gcc.exe"
-#   define HEADERS_DIR ".\\headers"
-#   define SRC_BUILD_DIR   ".\\src_build\\"
+#   define HEADERS_DIR ".\\headers\\"
+#   define THIREDPARTY_LIBS_BUILD_DIR   ".\\THIREDPARTY_LIBS_BUILD_DIR\\"
 #   define BUILD_DIR       ".\\build\\"
 #   define THIRDPARTY_DIR  ".\\thirdparty\\"
 #   define build(cmd) build_win(cmd)
 #   define SRC_DIR         ".\\src\\"
 #else
 #   define BUILD_DIR       "./build/"
-#   define SRC_BUILD_DIR   "./src_build/"
+#   define THIREDPARTY_LIBS_BUILD_DIR   ".\\THIREDPARTY_LIBS_BUILD_DIR\\"
 #   define THIRDPARTY_DIR  "./thirdparty/"
 #   define SRC_DIR         "./src/"
 #   define COMPILER "cc"
@@ -45,8 +46,8 @@ const char* src_files[] = {
 
 int build_thirdparty(Cmd *cmd, size_t i)
 {
-    mkdir_if_not_exists(SRC_BUILD_DIR);
-    mkdir_if_not_exists(SRC_BUILD_DIR"\\cJSON\\");
+    mkdir_if_not_exists(THIREDPARTY_LIBS_BUILD_DIR);
+    mkdir_if_not_exists(THIREDPARTY_LIBS_BUILD_DIR"cJSON\\");
 
     cmd_append(cmd, COMPILER);
     cmd_append(cmd, "-w");
@@ -59,7 +60,7 @@ int build_thirdparty(Cmd *cmd, size_t i)
     cmd_append(cmd, "-o");
 
     char obj_path[512]; 
-    snprintf(obj_path, sizeof(obj_path), SRC_BUILD_DIR"%s.o", thirdparty[i]);
+    snprintf(obj_path, sizeof(obj_path), THIREDPARTY_LIBS_BUILD_DIR"%s.o", thirdparty[i]);
     cmd_append(cmd, strdup(obj_path));
 
     cmd_append(cmd, "-I", HEADERS_DIR);
@@ -73,8 +74,8 @@ void build_parser(Cmd *cmd)
     cmd_append(cmd, COMPILER);
     cmd_append(cmd, "-Wall", "-Wextra");
     cmd_append(cmd, SRC_DIR"parse.c");
-    cmd_append(cmd, SRC_BUILD_DIR"cJSON\\cJSON.o");
-    cmd_append(cmd, SRC_BUILD_DIR"cJSON\\cJSON_Utils.o");
+    cmd_append(cmd, THIREDPARTY_LIBS_BUILD_DIR"cJSON\\cJSON.o");
+    cmd_append(cmd, THIREDPARTY_LIBS_BUILD_DIR"cJSON\\cJSON_Utils.o");
     cmd_append(cmd, "-o", BUILD_DIR"parse.exe");
     cmd_append(cmd, "-I", HEADERS_DIR, "-I", ".");
 }
@@ -90,9 +91,9 @@ void build_linux(Cmd *cmd)
         snprintf(srcs, sizeof(srcs), SRC_DIR"%s", src_files[i]);
         cmd_append(cmd, strdup(srcs));
     }
-    cmd_append(cmd, SRC_BUILD_DIR"tinyfiledialogs.o");
-    cmd_append(cmd, SRC_BUILD_DIR"cJSON/cJSON.o");
-    cmd_append(cmd, SRC_BUILD_DIR"cJSON/cJSON_Utils.o");
+    cmd_append(cmd, THIREDPARTY_LIBS_BUILD_DIR"tinyfiledialogs.o");
+    cmd_append(cmd, THIREDPARTY_LIBS_BUILD_DIR"cJSON/cJSON.o");
+    cmd_append(cmd, THIREDPARTY_LIBS_BUILD_DIR"cJSON/cJSON_Utils.o");
     cmd_append(cmd, "-I","./headers");
     cmd_append(cmd, "-I","./");
     cmd_append(cmd, "-I","/usr/local/include");
@@ -102,6 +103,7 @@ void build_linux(Cmd *cmd)
 
 void build_win(Cmd *cmd)
 {
+
     nob_log(NOB_INFO, "Build Target is : win32");
     cmd_append(cmd, COMPILER);
     cmd_append(cmd, "-Wall", "-Wextra", "-ggdb");
@@ -111,9 +113,9 @@ void build_win(Cmd *cmd)
         snprintf(srcs, sizeof(srcs), SRC_DIR"%s", src_files[i]);
         cmd_append(cmd, strdup(srcs));
     }
-    cmd_append(cmd, SRC_BUILD_DIR"tinyfiledialogs.o");
-    cmd_append(cmd, SRC_BUILD_DIR"cJSON\\cJSON.o");
-    cmd_append(cmd, SRC_BUILD_DIR"cJSON\\cJSON_Utils.o");
+    cmd_append(cmd, THIREDPARTY_LIBS_BUILD_DIR"tinyfiledialogs.o");
+    cmd_append(cmd, THIREDPARTY_LIBS_BUILD_DIR"cJSON\\cJSON.o");
+    cmd_append(cmd, THIREDPARTY_LIBS_BUILD_DIR"cJSON\\cJSON_Utils.o");
     cmd_append(cmd, "-I","C:\\Program Files (x86)\\raylib\\include");
     cmd_append(cmd, "-I",".\\headers");
     cmd_append(cmd, "-I",".");
@@ -122,23 +124,35 @@ void build_win(Cmd *cmd)
     cmd_append(cmd, "-lcomdlg32", "-lole32", "-luuid", "-lshlwapi");
 }
 
+bool delete_walk_entry(Nob_Walk_Entry entry)
+{
+    return nob_delete_file(entry.path);
+}
+
+bool delete_directory_recursively(const char *dir_path)
+{
+    return nob_walk_dir(dir_path, delete_walk_entry, .post_order = true);
+}
+
 int main(int argc, char **argv) {
     GO_REBUILD_URSELF(argc, argv);
 
     (void) argc;
     (void) argv;
     cmd.count = 0;
+
+    mkdir_if_not_exists(THIREDPARTY_LIBS_BUILD_DIR);
+    mkdir_if_not_exists(THIREDPARTY_LIBS_BUILD_DIR"cJSON\\");
     build_thirdparty(&cmd, 0);
     build_thirdparty(&cmd, 1);
     build_thirdparty(&cmd, 2);
 
     mkdir_if_not_exists("./build");
 
-    // build_parser(&cmd);
-    // if (!cmd_run(&cmd)) return 1;
-
     build(&cmd);
     nob_copy_directory_recursively("./res", "./build/res");
     if (!cmd_run(&cmd)) return 1; 
+    if(!delete_directory_recursively(THIREDPARTY_LIBS_BUILD_DIR)) return 1;
+
     return 0;
 }
