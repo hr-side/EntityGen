@@ -371,12 +371,14 @@ void Draw_Tabs(Rectangle bondry, Canvas *c, Ui_State *ui)
 
         DrawRectangleRec(tiny_box, color);
         DrawRectangleLinesEx(tiny_box_outline, thick, WHITE);
+        BeginScissorMode(tiny_box.x, tiny_box.y, tiny_box.width, tiny_box.height);
         DrawTextEx(ui->font, text,
                    (Vector2) {
                     .x = tiny_box.x + tiny_box.width*0.1f,
                     .y = tiny_box.y + tiny_box.height*0.5f - font_size*0.5f
                    },
                    font_size, 0, WHITE);
+        EndScissorMode();
     }
 }
 

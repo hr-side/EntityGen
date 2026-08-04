@@ -72,6 +72,7 @@ bool Parse(Ui_State *ui, Canvas *c)
                 frame.cords.width  = cJSON_IsNumber(w)   ? w->valuedouble   : 0.0;
                 frame.cords.height = cJSON_IsNumber(h)   ? h->valuedouble   : 0.0;
                 frame.texture_index = cJSON_IsNumber(tex) ? (size_t)tex->valueint : 0;
+                frame.texture_index += 1;
                 frame.hitbox_index  = cJSON_IsNumber(hit) ? (size_t)hit->valueint : 0;
 
                 frame.ID = c->next_frame_id++;
@@ -102,6 +103,7 @@ bool Parse(Ui_State *ui, Canvas *c)
     ui->current_texture_index = 1;
     ui->IsFrameSelected = false;
     ui->IsAnimationSelected = false;
+    nob_log(NOB_INFO ,"Finish Parsing...");
 
     return true;
 }
