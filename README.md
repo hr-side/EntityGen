@@ -3,7 +3,7 @@ Entity animation and collision metadata Generation
 
 ## How to Build
 
-We wrap nob with `gcc` or `clang`
+Wrap nob with `gcc` or `clang`
 ``` sh
 gcc nob.c -o nob
 ```
