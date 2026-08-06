@@ -5,6 +5,13 @@
 #include <stddef.h>
 #include <animation.h>
 
+typedef enum {
+    WELLCOME_WINDOW,
+    ANIMATION_WINDOW,
+    COLLISION_WINDOW,
+    WINDOW_COUNT
+} WINDOW_State;
+
 typedef struct {
     const char **items;
     size_t count;
@@ -26,6 +33,9 @@ typedef struct {
     bool IsFrameSelected;
     bool IsAnimationSelected;
     Animations animations;
+
+    WINDOW_State Win_state;
+    bool ShowMenu;
 } Ui_State;
 
 

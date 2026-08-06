@@ -157,16 +157,16 @@ void Animation_Panel_Show(Ui_State *ui, Canvas *c,Rectangle bondry)
 
         Vector2 MousePos = GetMousePosition();
 
-        if (CheckCollisionPointRec(MousePos, loops_field_box)) {
+        if (CheckCollisionPointRec(MousePos, loops_field_box) && !ui->ShowMenu) {
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                 ui->animations.items[ui->currentAnimationIndex].loops = !loops;
             }
         }
 
-        if (CheckCollisionPointRec(MousePos, bondry)) {
+        if (CheckCollisionPointRec(MousePos, bondry) && !ui->ShowMenu) {
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {select_duration_field = false; update_duration = true;}
         }
-        if (CheckCollisionPointRec(MousePos, duration_field_box)) {
+        if (CheckCollisionPointRec(MousePos, duration_field_box) && !ui->ShowMenu) {
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {select_duration_field = true; update_duration = false;}
         }
         
@@ -252,7 +252,7 @@ void Animation_Panel_Show(Ui_State *ui, Canvas *c,Rectangle bondry)
                     .height = font_size
                 };
 
-                if (CheckCollisionPointRec(MousePos, tiny_box)) {
+                if (CheckCollisionPointRec(MousePos, tiny_box) && !ui->ShowMenu) {
                     if (CheckCollisionPointRec(MousePos, Delete_box)) {
                         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                             if (ui->currentVisiableFrameIndex == i && ui->IsFrameSelected) {

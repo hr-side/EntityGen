@@ -11,6 +11,9 @@ int main() {
     Image windowIcon = LoadImage("res/icon.png");
     SetWindowIcon(windowIcon);
     SetTargetFPS(60);
+    SetWindowMinSize(WIDTH, HEIGHT);
+    SetWindowState(FLAG_WINDOW_RESIZABLE);
+    SetExitKey(0);
     ui_init();
 
     while (!WindowShouldClose()) {

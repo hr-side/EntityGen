@@ -152,6 +152,7 @@ int main(int argc, char **argv) {
     build(&cmd);
     nob_copy_directory_recursively("./res", "./build/res");
     if (!cmd_run(&cmd)) return 1; 
+    // Remove Uneeded Build Artifacts.
     if(!delete_directory_recursively(THIREDPARTY_LIBS_BUILD_DIR)) return 1;
 
     return 0;

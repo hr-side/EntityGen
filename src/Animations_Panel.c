@@ -1,5 +1,5 @@
-#include "raylib.h"
 #include <nob.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <ui.h>
 #include <Animations.h>
@@ -62,10 +62,10 @@ void add_Animation(Ui_State *ui, Rectangle bondry)
     };
 
     Vector2 MousePos = GetMousePosition();
-    if (CheckCollisionPointRec(MousePos, bondry)) {
+    if (CheckCollisionPointRec(MousePos, bondry) && !ui->ShowMenu) {
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) select_name_field = false; 
     }
-    if (CheckCollisionPointRec(MousePos, name_field_box)) {
+    if (CheckCollisionPointRec(MousePos, name_field_box) && !ui->ShowMenu) {
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) select_name_field = true; 
     }
 
@@ -98,7 +98,7 @@ void add_Animation(Ui_State *ui, Rectangle bondry)
     EndScissorMode();
 
     Color Add_box_color = GetColor(0x181818ff);
-    if (CheckCollisionPointRec(MousePos, add_button_box)) {
+    if (CheckCollisionPointRec(MousePos, add_button_box) && !ui->ShowMenu) {
         Add_box_color = ColorBrightness(Add_box_color, 0.3f);
     }
 
@@ -149,7 +149,7 @@ void add_Animation(Ui_State *ui, Rectangle bondry)
         }
     }
 save:
-    if (CheckCollisionPointRec(MousePos, add_button_box) || add) {
+    if ((CheckCollisionPointRec(MousePos, add_button_box) || add) && !ui->ShowMenu) {
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || add) {
             if (animation_name_field.count == 0) goto clean;
             select_name_field = false;
@@ -195,7 +195,11 @@ void Show_Animations(Ui_State *ui, Rectangle bondry)
 
     static float scroling_factor = 10.0f;
     static float scrole_value = 0.0f;
-    if (CheckCollisionPointRec(MousePos, box)) {
+    if (CheckCollisionPointRec(MousePos, box) && !ui->ShowMenu) {
+        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+            ui->IsAnimationSelected = false;
+        }
+
         float contentHeight = font_size + (Padding * (ui->animations.count) * 2) + ((ui->animations.count) * Padding);
         bool needsScroll = contentHeight > box.height;
 
@@ -240,7 +244,7 @@ void Show_Animations(Ui_State *ui, Rectangle bondry)
         if (&ui->animations.items[ui->currentAnimationIndex] == &ui->animations.items[i] && ui->IsAnimationSelected) {
             tiny_color = ColorBrightness(color, 0.3f);
         }
-        if (CheckCollisionPointRec(MousePos, tiny_box)) {
+        if (CheckCollisionPointRec(MousePos, tiny_box) && !ui->ShowMenu) {
             if (CheckCollisionPointRec(MousePos, Delete_box)) {
                 if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                     if (ui->currentAnimationIndex == i && ui->IsAnimationSelected) {

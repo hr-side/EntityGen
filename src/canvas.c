@@ -384,6 +384,7 @@ void Draw_Tabs(Rectangle bondry, Canvas *c, Ui_State *ui)
 
 void Draw_Canvas(Ui_State *ui, Rectangle bondry, Canvas *c)
 {
+    if (ui->ShowMenu) return;
     if (ui->current_texture_index == 0) {
         DrawRectangleRec(bondry, GetColor(0x655561ff));
         DrawRectangleLinesEx(bondry, 1.8f, WHITE);

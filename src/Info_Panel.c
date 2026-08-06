@@ -1,3 +1,4 @@
+#include "raylib.h"
 #include <canvas.h>
 #include <Info_Panel.h>
 #include <string.h>
@@ -8,6 +9,9 @@
 #if defined(__has_include) && __has_include(<unistd.h>)
     #include <unistd.h>
 #endif
+
+#define Padding (bondry.height - 30*2 - 15)
+#define sidePanelWidth 300.0f
 
 void ED_Dialog(Canvas *c, Ui_State *ui)
 {
@@ -22,15 +26,15 @@ void ED_Dialog(Canvas *c, Ui_State *ui)
 void Export_Button(Canvas *c, Rectangle bondry, Ui_State *ui)
 {
     Rectangle Box = {
-        .x = bondry.width * (1 - 0.125f) - 250*0.25f,
-        .y = bondry.height * (1 - 0.45f),
+        .x = bondry.width - (250*0.5f) - sidePanelWidth*0.5f,
+        .y = Padding,
         .width = 250,
         .height = 30
     };
     float thick = 2.5f;
     Color color;
     Vector2 MousePos = GetMousePosition();
-    if (CheckCollisionPointRec(MousePos, Box)) {
+    if (CheckCollisionPointRec(MousePos, Box) && !ui->ShowMenu) {
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) ED_Dialog(c, ui);
         color = ColorBrightness(GetColor(0x181818ff), 0.2f);
         thick = 1.5f;
@@ -72,15 +76,15 @@ void ID_Dialog(Canvas *c, Ui_State *ui)
 void Import_Button(Canvas *c, Rectangle bondry, Ui_State *ui)
 {
     Rectangle Box = {
-        .x = bondry.width * (1 - 0.125f) - 250*0.25f,
-        .y = bondry.height * (0.1f),
+        .x = bondry.width - (250*0.5f) - sidePanelWidth*0.5f,
+        .y = 15 + 30 + Padding*0.3f,
         .width = 250,
         .height = 30
     };
     float thick = 2.5f;
     Color color;
     Vector2 MousePos = GetMousePosition();
-    if (CheckCollisionPointRec(MousePos, Box)) {
+    if (CheckCollisionPointRec(MousePos, Box) && !ui->ShowMenu) {
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) ID_Dialog(c, ui);
         color = ColorBrightness(GetColor(0x181818ff), 0.2f);
         thick = 1.5f;
@@ -109,13 +113,13 @@ void Info_Section(Canvas *c, Rectangle bondry, Ui_State *ui)       // Print the 
     String_Builder sb = {0};
     String_View cstr_Info = {0};
     if (c->Select_Mode) {
-        sb_appendf(&sb, "Edit Frame: X = %.2f, Y : %.2f | Frame Size: %.2fx%.2f (PX)",
+        sb_appendf(&sb, " Edit Frame: X: %.2f, Y: %.2f | Frame Size: %.2fx%.2f (PX)",
                       c->edited_frame.x, c->edited_frame.y, c->edited_frame.width, c->edited_frame.height);
         sb_append_null(&sb);
         cstr_Info = sb_to_sv(sb);
     }
     else if (ui->IsFrameSelected) {
-        sb_appendf(&sb, "Selected Frame: X = %.2f, Y : %.2f | Frame Size: %.2fx%.2f (PX) | Texture_Index: %zu",
+        sb_appendf(&sb, " Selected Frame: X: %.2f, Y: %.2f | Frame Size: %.2fx%.2f (PX) | Texture_Index: %zu",
                       c->selected_frame.x, c->selected_frame.y, c->selected_frame.width, c->selected_frame.height, ui->current_texture_index);
         sb_append_null(&sb);
         cstr_Info = sb_to_sv(sb);
@@ -126,7 +130,7 @@ void Info_Section(Canvas *c, Rectangle bondry, Ui_State *ui)       // Print the 
         DrawTextEx(ui->font, Info, (Vector2) {bondry.x + 300, bondry.height - 50}, 24, 0, RAYWHITE);
     }
     else {
-        DrawText(" - ", bondry.x + 300, bondry.height - 50, 24, RAYWHITE);
+        DrawTextEx(ui->font, " No Info To Show!. ", (Vector2) { .x = bondry.x + 300, .y = bondry.height - 50 }, 24, 0, RAYWHITE);
     }
 }
 
@@ -156,7 +160,7 @@ void Import_Image_Button(Rectangle bondry, Canvas *c, Ui_State *ui)
     float thick = 2.5f;
     Color color;
     Vector2 MousePos = GetMousePosition();
-    if (CheckCollisionPointRec(MousePos, Box)) {
+    if (CheckCollisionPointRec(MousePos, Box) && !ui->ShowMenu) {
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) II_Dialog(c, ui);
         color = ColorBrightness(GetColor(0x181818ff), 0.2f);
         thick = 1.5f;
